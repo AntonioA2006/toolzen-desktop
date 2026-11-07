@@ -35,6 +35,7 @@ export type ToolIconName =
   | "settings"
   | "info"
   | "search"
+  | "shield"
   | "braces"
   | "fingerprint"
   | "binary"

@@ -399,7 +399,7 @@ fn validate_route(route: &Value) -> AppResult<()> {
         .and_then(Value::as_str)
         .ok_or_else(|| AppError::Message("Invalid route.".into()))?;
     match name {
-        "home" | "tools" | "favorites" | "recent" | "settings" | "about" => Ok(()),
+        "home" | "tools" | "favorites" | "recent" | "settings" | "about" | "privacy" => Ok(()),
         "tool" => {
             let id = route.get("toolId").and_then(Value::as_str).unwrap_or("");
             require_id(id)

@@ -3,6 +3,8 @@
 
 import * as Dialog from "@radix-ui/react-dialog";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { toolCopy } from "@/lib/catalog-copy";
+import { translate } from "@/lib/i18n";
 import { usePreferencesStore } from "@/stores/preferences-store";
 import { useUiStore } from "@/stores/ui-store";
 import { CATEGORIES } from "@/tools/categories";
@@ -23,6 +25,7 @@ export function CommandPalette() {
   const navigate = usePreferencesStore((state) => state.navigate);
   const updatePreferences = usePreferencesStore((state) => state.updatePreferences);
   const theme = usePreferencesStore((state) => state.preferences.theme);
+  const locale = usePreferencesStore((state) => state.preferences.language);
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -33,33 +36,34 @@ export function CommandPalette() {
       setOpen(false);
     };
     const navigation: Command[] = [
-      { id: "home", group: "Navigate", label: "Home", hint: "Dashboard", run: go({ name: "home" }) },
-      { id: "tools", group: "Navigate", label: "All tools", hint: "Explorer", run: go({ name: "tools" }) },
-      { id: "favorites", group: "Navigate", label: "Favorites", hint: "Starred tools", run: go({ name: "favorites" }) },
-      { id: "recent", group: "Navigate", label: "Recent", hint: "Opened tools", run: go({ name: "recent" }) },
-      { id: "settings", group: "Navigate", label: "Settings", hint: "Preferences", run: go({ name: "settings" }) },
-      { id: "about", group: "Navigate", label: "About", hint: "Version and license", run: go({ name: "about" }) },
+      { id: "home", group: translate(locale, "paletteNavigate"), label: translate(locale, "home"), hint: translate(locale, "startWork"), run: go({ name: "home" }) },
+      { id: "tools", group: translate(locale, "paletteNavigate"), label: translate(locale, "allTools"), hint: translate(locale, "catalogTitle"), run: go({ name: "tools" }) },
+      { id: "favorites", group: translate(locale, "paletteNavigate"), label: translate(locale, "favorites"), hint: translate(locale, "emptyFavorites"), run: go({ name: "favorites" }) },
+      { id: "recent", group: translate(locale, "paletteNavigate"), label: translate(locale, "recent"), hint: translate(locale, "emptyRecent"), run: go({ name: "recent" }) },
+      { id: "settings", group: translate(locale, "paletteNavigate"), label: translate(locale, "settings"), hint: translate(locale, "settingsLead"), run: go({ name: "settings" }) },
+      { id: "about", group: translate(locale, "paletteNavigate"), label: translate(locale, "about"), hint: translate(locale, "aboutLead"), run: go({ name: "about" }) },
+      { id: "privacy", group: translate(locale, "paletteNavigate"), label: translate(locale, "privacy"), hint: translate(locale, "privacyLead"), run: go({ name: "privacy" }) },
       ...CATEGORIES.map((category) => ({
         id: `category-${category.id}`,
-        group: "Categories",
-        label: category.name,
+        group: translate(locale, "categories"),
+        label: translate(locale, category.id === "pdf" ? "catPdf" : category.id === "conversion" ? "catConvert" : category.id === "image" ? "catImage" : "catOcr"),
         hint: "Category",
         run: go({ name: "category", category: category.id }),
       })),
     ];
     const tools = toolRegistry.list().map((tool) => ({
       id: `tool-${tool.meta.id}`,
-      group: "Tools",
-      label: tool.meta.name,
-      hint: tool.meta.availability === "available" ? tool.meta.description : "Unavailable",
+      group: translate(locale, "paletteTools"),
+      label: toolCopy(locale, tool.meta.id).short,
+      hint: toolCopy(locale, tool.meta.id).blurb,
       run: go({ name: "tool", toolId: tool.meta.id }),
     }));
     const actions: Command[] = [
       {
         id: "theme",
-        group: "Actions",
-        label: theme === "dark" ? "Switch theme to light" : "Switch theme to dark",
-        hint: "Appearance",
+        group: translate(locale, "paletteActions"),
+        label: theme === "dark" ? translate(locale, "light") : translate(locale, "dark"),
+        hint: translate(locale, "appearance"),
         run: () => {
           void updatePreferences({ theme: theme === "dark" ? "light" : "dark" });
           setOpen(false);
@@ -67,7 +71,7 @@ export function CommandPalette() {
       },
     ];
     return [...navigation, ...tools, ...actions];
-  }, [navigate, setOpen, theme, updatePreferences]);
+  }, [locale, navigate, setOpen, theme, updatePreferences]);
 
   const filtered = commands.filter((command) => `${command.label} ${command.hint} ${command.group}`.toLowerCase().includes(query.trim().toLowerCase()));
   const current = filtered[Math.min(active, Math.max(filtered.length - 1, 0))];
@@ -98,7 +102,7 @@ export function CommandPalette() {
               setQuery(event.target.value);
               setActive(0);
             }}
-            placeholder="Search tools and actions"
+            placeholder={translate(locale, "search")}
             className="h-11 w-full border-b border-line bg-transparent px-3 text-sm outline-none"
             aria-controls="command-list"
             aria-activedescendant={current ? `command-${current.id}` : undefined}
@@ -116,7 +120,7 @@ export function CommandPalette() {
             }}
           />
           <ul id="command-list" role="listbox" aria-label="Commands" className="max-h-80 overflow-auto p-1">
-            {filtered.length === 0 ? <li className="px-3 py-6 text-center text-sm text-subtle">No matching commands.</li> : null}
+            {filtered.length === 0 ? <li className="px-3 py-6 text-center text-sm text-subtle">{translate(locale, "paletteEmpty")}</li> : null}
             {filtered.map((command, index) => (
               <li key={command.id}>
                 <button

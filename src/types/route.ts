@@ -11,9 +11,10 @@ export type AppRoute =
   | { name: "recent" }
   | { name: "settings" }
   | { name: "about" }
+  | { name: "privacy" }
   | { name: "tool"; toolId: string };
 
-const ROUTE_NAMES = new Set(["home", "tools", "category", "favorites", "recent", "settings", "about", "tool"]);
+const ROUTE_NAMES = new Set(["home", "tools", "category", "favorites", "recent", "settings", "about", "privacy", "tool"]);
 
 export function parseRoute(value: unknown): AppRoute | null {
   if (!value || typeof value !== "object") return null;

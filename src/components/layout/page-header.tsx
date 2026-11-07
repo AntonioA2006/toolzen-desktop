@@ -32,8 +32,8 @@ export function PageHeader({
           ))}
         </nav>
       ) : null}
-      <h1 className="text-[22px] font-semibold tracking-tight">{title}</h1>
-      {description ? <p className="max-w-2xl text-sm text-subtle">{description}</p> : null}
+      <h1 className="type-display">{title}</h1>
+      {description ? <p className="type-body max-w-2xl text-subtle">{description}</p> : null}
     </header>
   );
 }
