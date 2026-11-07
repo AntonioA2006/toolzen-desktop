@@ -61,13 +61,6 @@ export function SettingsPage() {
             <option value="last-tool">{translate(locale, "openLast")}</option>
           </Select>
         </div>
-        <div>
-          <Label htmlFor="autostart">{translate(locale, "launchAtLogin")}</Label>
-          <Select id="autostart" value="unavailable" disabled>
-            <option value="unavailable">{translate(locale, "notImplemented")}</option>
-          </Select>
-          <p className="type-meta mt-1">{translate(locale, "autostartNote")}</p>
-        </div>
       </section>
       <section className="grid gap-2">
         <h2 className="type-title">{translate(locale, "shortcuts")}</h2>
@@ -75,20 +68,7 @@ export function SettingsPage() {
       </section>
       <section className="grid gap-2">
         <h2 className="type-title">{translate(locale, "execution")}</h2>
-        <fieldset className="grid gap-2">
-          <legend className="type-label text-subtle">{translate(locale, "execution")}</legend>
-          <label className="flex items-start gap-2 text-sm"><input type="radio" name="mode" checked={preferences.executionMode === "local"} onChange={() => void update({ executionMode: "local" })} /> {translate(locale, "localMode")}</label>
-          <label className="flex items-start gap-2 text-sm text-faint"><input type="radio" name="mode" disabled /> {translate(locale, "cloudMode")}</label>
-          <label className="flex items-start gap-2 text-sm"><input type="radio" name="mode" checked={preferences.executionMode === "auto"} onChange={() => void update({ executionMode: "auto" })} /> {translate(locale, "autoMode")}</label>
-        </fieldset>
-      </section>
-      <section className="grid gap-2">
-        <h2 className="type-title">{translate(locale, "foundations")}</h2>
-        <p className="text-sm text-subtle">{translate(locale, "foundationsBody")}</p>
-        <label className="flex items-start gap-2 text-sm">
-          <input type="checkbox" checked={preferences.aiRetentionOptIn} onChange={(event) => void update({ aiRetentionOptIn: event.target.checked })} />
-          <span>{translate(locale, "aiRetention")}</span>
-        </label>
+        <p className="text-sm">{preferences.executionMode === "auto" ? translate(locale, "autoMode") : translate(locale, "localMode")}</p>
       </section>
       <section className="grid gap-2">
         <h2 className="type-title">{translate(locale, "storage")}</h2>

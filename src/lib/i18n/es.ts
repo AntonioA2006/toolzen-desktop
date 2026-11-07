@@ -4,7 +4,7 @@
 import type { MessageKey } from "./en";
 
 export const messagesEs: Record<MessageKey, string> = {
-  appDescription: "Herramientas de PDF, imagen, conversión y OCR. Los archivos se quedan en este dispositivo.",
+  appDescription: "Herramientas locales. Los archivos se quedan en este equipo.",
   popular: "Herramientas populares",
   popularNote: "Todavía no hay uso. Estas herramientas están incluidas; no son un registro de actividad.",
   usage: "Según tu uso",
@@ -28,7 +28,7 @@ export const messagesEs: Record<MessageKey, string> = {
   noResult: "Todavía no hay archivo. El resultado aparece solo cuando el proceso termina.",
   files: "Archivos",
   download: "Descargar",
-  statusReady: "Lista",
+  statusReady: "Disponible",
   statusPartial: "Parcial",
   statusUnavailable: "No incluida",
   language: "Idioma",
@@ -60,6 +60,12 @@ export const messagesEs: Record<MessageKey, string> = {
   privacyLead: "Qué guarda esta versión y qué no envía.",
   privacyStorage: "SQLite guarda preferencias, identificadores de favoritos y herramientas recientes con su hora. No guarda los bytes de los archivos. La vista previa del navegador usa localStorage y lo dice.",
   privacyNote: "Esta versión no incluye un cliente de analítica. Las herramientas no suben los bytes de los archivos.",
+  startWork: "Empieza con una herramienta que sí funciona",
+  categoryCounts: "{ready} listas · {partial} parcial · {unavailable} no están en esta versión",
+  removeFile: "Quitar",
+  moveUp: "Subir",
+  moveDown: "Bajar",
+  unknownType: "Tipo desconocido",
   emptyFavorites: "Todavía no hay favoritos. Marca una herramienta en el explorador.",
   emptyRecent: "No hay herramientas recientes. Abrir una guarda el nombre y la hora, no el archivo.",
   unfavorite: "Quitar de favoritos",

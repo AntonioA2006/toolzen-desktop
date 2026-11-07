@@ -20,6 +20,8 @@ pub struct AppState {
 }
 
 fn runtime_window_icon() -> Option<tauri::image::Image<'static>> {
+    // Tauri's Image::from_bytes needs the image-png feature, which pulls the `image` crate.
+    // That crate is not in this lockfile. `png` 0.18 is already used by the Tauri stack, so the window icon is decoded with it.
     let decoder = png::Decoder::new(std::io::Cursor::new(
         include_bytes!("../icons/runtime/icon-32.png").as_slice(),
     ));

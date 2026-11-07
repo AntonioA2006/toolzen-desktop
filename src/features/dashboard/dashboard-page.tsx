@@ -4,18 +4,33 @@
 import { toolCopy } from "@/lib/catalog-copy";
 import { translate } from "@/lib/i18n";
 import { usePreferencesStore } from "@/stores/preferences-store";
-import { useUiStore } from "@/stores/ui-store";
 import { CATEGORIES } from "@/tools/categories";
 import { toolRegistry } from "@/tools/registry";
 import { ToolIcon } from "@/tools/icons";
 import { readinessOf } from "@/tools/mvp/status";
+
+const START_IDS = [
+  "merge-pdf",
+  "resize-image",
+  "compress-image",
+  "crop-image",
+  "webp-converter",
+  "remove-image-metadata",
+  "jpg-to-pdf",
+  "extract-pdf-pages",
+  "delete-pdf-pages",
+  "rotate-pdf",
+] as const;
 
 export function DashboardPage() {
   const locale = usePreferencesStore((state) => state.preferences.language);
   const navigate = usePreferencesStore((state) => state.navigate);
   const favorites = usePreferencesStore((state) => state.favorites);
   const recent = usePreferencesStore((state) => state.recent);
-  const setPaletteOpen = useUiStore((state) => state.setPaletteOpen);
+  const start = START_IDS.flatMap((id) => {
+    const tool = toolRegistry.get(id);
+    return tool && readinessOf(id) === "ready" ? [tool] : [];
+  });
   const favoriteTools = favorites.flatMap((id) => {
     const tool = toolRegistry.get(id);
     return tool ? [tool] : [];
@@ -28,33 +43,46 @@ export function DashboardPage() {
   }).slice(0, 4);
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-5">
       <header>
-        <h1 className="type-display">ToolZen</h1>
-        <p className="type-meta mt-1">{translate(locale, "appDescription")}</p>
+        <h1 className="type-title">ToolZen</h1>
+        <p className="type-meta">{translate(locale, "appDescription")}</p>
       </header>
-      <button type="button" className="panel flex h-10 items-center px-3 text-left text-sm text-faint" onClick={() => setPaletteOpen(true)}>
-        {translate(locale, "searchTools")}
-      </button>
       <section>
-        <h2 className="type-label text-subtle">{translate(locale, "favorites")}</h2>
-        {favoriteTools.length === 0 ? <p className="empty">{translate(locale, "emptyFavorites")}</p> : (
-          <ul className="mt-2 grid gap-1">
+        <h2 className="type-label text-subtle">{translate(locale, "startWork")}</h2>
+        <ul className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+          {start.map((tool) => (
+            <li key={tool.meta.id}>
+              <button type="button" className="panel row-btn h-full" onClick={() => void navigate({ name: "tool", toolId: tool.meta.id })}>
+                <ToolIcon name={tool.meta.icon} className="size-4 shrink-0" />
+                <span className="min-w-0">
+                  <span className="block text-sm font-semibold">{toolCopy(locale, tool.meta.id).short}</span>
+                  <span className="type-meta">{translate(locale, "statusReady")}</span>
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </section>
+      {favoriteTools.length > 0 ? (
+        <section>
+          <h2 className="type-label text-subtle">{translate(locale, "favorites")}</h2>
+          <ul className="mt-1">
             {favoriteTools.map((tool) => (
               <li key={tool.meta.id}>
                 <button type="button" className="row-btn" onClick={() => void navigate({ name: "tool", toolId: tool.meta.id })}>
                   <ToolIcon name={tool.meta.icon} className="size-4" />
-                  <span>{toolCopy(locale, tool.meta.id).short}</span>
+                  {toolCopy(locale, tool.meta.id).short}
                 </button>
               </li>
             ))}
           </ul>
-        )}
-      </section>
-      <section>
-        <h2 className="type-label text-subtle">{translate(locale, "recent")}</h2>
-        {recentTools.length === 0 ? <p className="empty">{translate(locale, "emptyRecent")}</p> : (
-          <ul className="mt-2 grid gap-1">
+        </section>
+      ) : null}
+      {recentTools.length > 0 ? (
+        <section>
+          <h2 className="type-label text-subtle">{translate(locale, "recent")}</h2>
+          <ul className="mt-1">
             {recentTools.map((entry) => {
               const tool = toolRegistry.get(entry.toolId);
               return (
@@ -67,26 +95,28 @@ export function DashboardPage() {
               );
             })}
           </ul>
-        )}
-      </section>
+        </section>
+      ) : null}
       <section>
         <h2 className="type-label text-subtle">{translate(locale, "categories")}</h2>
-        <ul className="mt-2 grid gap-2 sm:grid-cols-2">
-          {CATEGORIES.map((category) => (
-            <li key={category.id}>
-              <button type="button" className="panel row-btn" onClick={() => void navigate({ name: "category", category: category.id })}>
-                <ToolIcon name={category.icon} className="size-4" />
-                <span>
-                  <span className="block type-title">{category.name}</span>
-                  <span className="type-meta">{category.description}</span>
-                </span>
-              </button>
-            </li>
-          ))}
+        <ul className="mt-1 divide-y divide-line rounded-md border border-line">
+          {CATEGORIES.map((category) => {
+            const tools = toolRegistry.list().filter((tool) => tool.meta.category === category.id);
+            const ready = tools.filter((tool) => readinessOf(tool.meta.id) === "ready").length;
+            const partial = tools.filter((tool) => readinessOf(tool.meta.id) === "partial").length;
+            const unavailable = tools.length - ready - partial;
+            return (
+              <li key={category.id}>
+                <button type="button" className="row-btn" onClick={() => void navigate({ name: "category", category: category.id })}>
+                  <ToolIcon name={category.icon} className="size-4" />
+                  <span className="font-medium">{category.name}</span>
+                  <span className="type-meta ml-auto">{translate(locale, "categoryCounts").replace("{ready}", String(ready)).replace("{partial}", String(partial)).replace("{unavailable}", String(unavailable))}</span>
+                </button>
+              </li>
+            );
+          })}
         </ul>
       </section>
-      <p className="type-meta">{translate(locale, "privacyLead")} <button type="button" className="underline" onClick={() => void navigate({ name: "privacy" })}>{translate(locale, "privacy")}</button></p>
-      <p className="sr-only">{readinessOf("merge-pdf")}</p>
     </div>
   );
 }

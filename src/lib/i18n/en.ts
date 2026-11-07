@@ -2,7 +2,7 @@
 // Copyright 2026 ToolZen Contributors
 
 export const messages = {
-  appDescription: "PDF, image, conversion, and OCR tools. Files stay on this device.",
+  appDescription: "Local file tools. Files stay on this device.",
   popular: "Popular tools",
   popularNote: "No usage yet. These are included tools, not a record of activity.",
   usage: "From your usage",
@@ -58,6 +58,12 @@ export const messages = {
   privacyLead: "What this build stores and what it does not send.",
   privacyStorage: "SQLite stores preferences, favorite ids, and recent tool ids with timestamps. It does not store file bytes. The browser preview uses localStorage instead and says so.",
   privacyNote: "There is no analytics client in this build. File bytes are not uploaded by the tools.",
+  startWork: "Start with a tool that runs",
+  categoryCounts: "{ready} ready · {partial} partial · {unavailable} not in this build",
+  removeFile: "Remove",
+  moveUp: "Up",
+  moveDown: "Down",
+  unknownType: "Unknown type",
   emptyFavorites: "No favorites yet. Star a tool in the explorer.",
   emptyRecent: "No recent tools. Opening a tool records its name and time, not the file.",
   unfavorite: "Remove from favorites",

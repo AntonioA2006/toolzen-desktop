@@ -56,7 +56,7 @@ export function Sidebar() {
           return (
             <NavButton
               key={category.id}
-              label={category.name}
+              label={translate(locale, category.id === "pdf" ? "catPdf" : category.id === "conversion" ? "catConvert" : category.id === "image" ? "catImage" : "catOcr")}
               icon={category.icon}
               collapsed={collapsed}
               current={sameRoute(route, target)}
@@ -93,8 +93,8 @@ function NavButton({
       aria-current={current ? "page" : undefined}
       title={collapsed ? label : undefined}
       className={cn(
-        "flex h-8 items-center gap-2 rounded-md px-2 text-left text-sm text-[#b9c8e8] hover:bg-white/10 hover:text-white",
-        current && "bg-white/10 text-white",
+        "flex h-8 items-center gap-2 rounded-md px-2 text-left text-sm text-[var(--sidebar-muted)] hover:bg-white/10 hover:text-[var(--sidebar-text)]",
+        current && "bg-white/14 text-[var(--sidebar-text)] font-semibold",
         collapsed && "justify-center px-0",
       )}
       onClick={onClick}
