@@ -36,7 +36,7 @@ export function Sidebar() {
   return (
     <aside className={cn("flex h-full shrink-0 flex-col border-r border-white/10 bg-sidebar text-white", collapsed ? "w-16" : "w-60")}>
       <div className={cn("flex h-14 items-center gap-2 px-3", collapsed && "justify-center")}>
-        <span className="grid size-8 place-items-center rounded-lg bg-[linear-gradient(135deg,#1b5cf3,#22c9f2)] text-white">
+        <span className="grid size-8 place-items-center rounded-md bg-[#1e4fd0] text-white">
           <LogoMark className="size-5" />
         </span>
         {collapsed ? null : <Wordmark />}
@@ -49,7 +49,7 @@ export function Sidebar() {
           <NavButton key={item.key} label={translate(locale, item.key)} icon={item.icon} collapsed={collapsed} current={sameRoute(route, item.route)} onClick={() => void navigate(item.route)} />
         ))}
       </nav>
-      <div className="mt-4 px-3 text-[11px] font-medium tracking-wide text-white/50 uppercase">{collapsed ? "" : translate(locale, "categories")}</div>
+      <div className="mt-4 px-3 text-[12px] font-semibold tracking-wide text-[var(--sidebar-muted)] uppercase">{collapsed ? "" : translate(locale, "categories")}</div>
       <nav aria-label="Categories" className="mt-1 flex flex-col gap-0.5 px-2">
         {CATEGORIES.map((category) => {
           const target: AppRoute = { name: "category", category: category.id };
@@ -93,8 +93,8 @@ function NavButton({
       aria-current={current ? "page" : undefined}
       title={collapsed ? label : undefined}
       className={cn(
-        "flex h-8 items-center gap-2 rounded-md px-2 text-left text-sm text-[var(--sidebar-muted)] hover:bg-white/10 hover:text-[var(--sidebar-text)]",
-        current && "bg-white/14 text-[var(--sidebar-text)] font-semibold",
+        "flex min-h-9 items-center gap-2 rounded-md px-2 text-left text-sm text-[var(--sidebar-muted)] hover:bg-white/10 hover:text-[var(--sidebar-text)]",
+        current && "bg-white/15 font-semibold text-[var(--sidebar-text)]",
         collapsed && "justify-center px-0",
       )}
       onClick={onClick}

@@ -12,6 +12,7 @@ export function useToolRunner(toolId: string) {
   const [output, setOutput] = useState<unknown>(null);
   const [error, setError] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
+  const [durationMs, setDurationMs] = useState<number | null>(null);
 
   async function run(input: unknown) {
     setStatus("running");
@@ -25,16 +26,18 @@ export function useToolRunner(toolId: string) {
     if (outcome.ok) {
       setStatus("success");
       setOutput(outcome.output);
-      setNote(outcome.autoResolution ? autoCopy(outcome.autoResolution, outcome.durationMs) : `Completed locally in ${outcome.durationMs} ms.`);
+      setDurationMs(outcome.durationMs);
+      setNote(outcome.autoResolution ? autoCopy(outcome.autoResolution, outcome.durationMs) : null);
       return;
     }
     setStatus("error");
     setOutput(null);
+    setDurationMs(null);
     setNote(null);
     setError(outcome.error.message);
   }
 
-  return { status, output, error, note, run };
+  return { status, output, error, note, durationMs, run };
 }
 
 function autoCopy(resolution: AutoResolution, durationMs: number): string {

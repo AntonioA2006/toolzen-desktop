@@ -3,16 +3,15 @@
 
 # UI and UX audit
 
-Evidence is the desktop build before this branch: screenshots `home-en-light.png` and `split-es-light.png` in the phase 2 UI set, plus the components those screens rendered (`site-header`, `home-hero`, `tool-flow` classes from the copied website CSS).
+The website shell from 0.1.1 is the baseline this branch replaces. This note records what that shell got wrong and what this pass changed. Scores are in `QA_REPORT.md`.
 
-| Screen | Problem | Severity | Proposal | Impact | Priority |
-| --- | --- | --- | --- | --- | --- |
-| Home | Full-bleed marketing hero, oversized heading, decorative grid and blobs inside a desktop window. | High | Compact title, search, favorites, recent, categories. | Starts work without scrolling a landing page. | P0 |
-| Header | Website nav (categories, language pill, gradient catalog button) plus a second local row. | High | Collapsible sidebar and one search field. Native window controls stay the OS ones. | Matches a desktop tool, not a site. | P0 |
-| Tool | Drop zone is large and the page repeats marketing chips. | Medium | Same actions in a shorter workspace: file, options, run, save. | Less scrolling. Honesty labels stay. | P0 |
-| Explorer | Featured web cards and “not included” badges on a dark catalog. | Medium | List rows with availability and favorite. | Easier to scan twenty tools. | P1 |
-| Settings, favorites, recent, about | Already compact, but English strings and a website shell around them. | Medium | Keep the screens, translate headings, put them in the sidebar. | One navigation model. | P1 |
-| Save | The website download link caused a WebView multi-download prompt. | High | Keep the native save dialog. Do not restore the anchor. | Already fixed in 0.1.1. This branch keeps it. | P0 |
-| Icon | Bundle icons are the installer/dock identity. A second runtime mark was not set. | Low | Add a separate taskbar icon without replacing bundle files. | Window icon can differ where the OS allows it. | P2 |
+| Screen | What was wrong | What this pass does |
+| --- | --- | --- |
+| Home | Marketing hero, a defensive Spanish heading, and a subtitle that advertised OCR. Category names stayed in English. Counts said “1 listas”. Dates used English AM/PM. | Heading is “Tus herramientas, a mano” / “Tools at hand”. Subtitle is “Los archivos se quedan en este equipo.” Categories use the registry keys (Conversión, Imagen). Counts are singular or plural. Dates use `formatLocal`. Ready tools are a directory with a one-line description, not ten “Ready” badges. |
+| Tool result | The drop zone, remove, process, and process-another stayed active above the success block. | A successful run replaces the form with measured input bytes, output bytes, duration, one primary Save as, and a secondary Change files. Change files returns to the form so the file can be run again. |
+| Options | Compress looked like it had lost a quality control. | `specs.ts` on this branch and on main gives compress-image and webp-converter `options: []`. The canvas encoder uses a fixed quality of 0.75. The page states that. It does not add a slider. Resize, crop, rotate, page lists, and JPG order controls that the specs define are still on the page, with labels and constraints. |
+| Explorer | Badges collided with titles. | The row fills the width. The star does not. Badges are only for partial and unavailable. |
+| Favorites and recent | English card copy stayed visible next to the empty-state sentence. | Localized rows. The empty sentence shows only when the list is empty. |
+| Fonts | Dev server returned 403 for the woff2 files when `node_modules` resolved outside the project, so the family never loaded. | `server.fs.allow` includes the real `node_modules` path. Chrome then reported `document.fonts.check('14px "Plus Jakarta Sans"') === true`. |
 
-This audit is not a claim that every pixel was measured. Contrast of the new tokens is checked by using the token pairs in the stylesheet, not by an automated WCAG scanner.
+Still limited: no screen-reader pass, the native Save dialog was not clicked (WebKitWebDriver is not installed), and Windows and macOS were not launched.

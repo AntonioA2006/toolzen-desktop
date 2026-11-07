@@ -8,7 +8,7 @@ export function PrivacyPage() {
   const locale = usePreferencesStore((state) => state.preferences.language);
   const info = usePreferencesStore((state) => state.info);
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
+    <div className="flex w-full max-w-3xl flex-col gap-4">
       <header>
         <h1 className="type-display">{translate(locale, "privacy")}</h1>
         <p className="type-meta mt-1">{translate(locale, "privacyLead")}</p>

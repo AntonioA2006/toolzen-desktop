@@ -3,12 +3,14 @@
 
 # Design system
 
-Tokens live in `src/styles/globals.css` on `:root` and `.dark`. Components use the Tailwind names mapped from those tokens (`bg-canvas`, `text-ink`, `border-line`, `bg-accent`) or the small set of classes in that file (`.panel`, `.row-btn`, `.drop`, `.field-input`, `.status`, `.type-display`, `.type-title`, `.type-meta`).
+Tokens live in `src/styles/globals.css` on `:root` and `.dark`. Components use those tokens or the classes in that file (`.panel`, `.row-btn`, `.drop`, `.field-input`, `.status`, `.type-display`, `.type-title`, `.type-label`, `.type-body`, `.type-meta`).
 
-Light background is `#f4f5f7`. Dark background is `#14161c`. Accent is `#2f5fd0` in light and `#8eaffa` in dark. Success, warning, and danger have soft backgrounds for status chips. Focus is a 2px outline. Hover and active are separate fills.
+Light background is `#f4f5f7`. Ink is `#1a1d24`. Metadata is `#5c6372`. Dark background is `#14161c`. Dark metadata is `#8e96a6`. Accent is `#2f5fd0` in light and `#8eaffa` in dark. Focus is a 2px solid outline in the focus token, offset 2px. Hover is a separate fill. There is no glow, glass, or gradient hero.
 
-Type uses Plus Jakarta Sans for UI text and JetBrains Mono for paths and sizes. Display is 22px. Titles are 15px. Body is 14px. Labels and metadata are 12px. Spacing follows the 4px Tailwind scale.
+Type is Plus Jakarta Sans, loaded from the local `@fontsource` files, and JetBrains Mono for sizes and paths. Measured on the home route after the files loaded: body 14px with line-height 21px (1.5), page heading 24px, section label 14px semibold, metadata 12px. Field labels are 14px semibold. Spacing uses 4, 8, 12, 16, 24, and 32. Sidebar rows are at least 32px tall. A star or other compact control uses `shrink-0` so it does not take `width: 100%` from `.row-btn`.
 
-Motion is color and border changes only. `prefers-reduced-motion: reduce` cuts transitions. There is no decorative glow, glass, or gradient hero.
+Dates use `Intl.DateTimeFormat` with `es` or `en`, `dateStyle: "medium"`, and `timeStyle: "short"`. No `timeZone` option is passed, so the user's local zone is used. The app does not change the machine timezone.
 
-No new dependency was added for this system. Buttons stay on the existing Radix slot and `class-variance-authority` helper.
+Motion is color and border only. `prefers-reduced-motion: reduce` shortens animation and transition duration. Theme `system` follows `prefers-color-scheme`.
+
+The dev server allows the real `node_modules` path so font files still load when `node_modules` is a symlink outside the project root. The production build emits the woff2 files into `dist/assets`.

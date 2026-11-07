@@ -31,7 +31,7 @@ export function SettingsPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
+    <div className="flex w-full max-w-3xl flex-col gap-6">
       <PageHeader title={translate(locale, "settings")} description={translate(locale, "settingsLead")} />
       <section className="grid gap-3">
         <h2 className="type-title">{translate(locale, "appearance")}</h2>
@@ -74,7 +74,7 @@ export function SettingsPage() {
         <h2 className="type-title">{translate(locale, "storage")}</h2>
         <p className="text-sm text-subtle">{info?.note ?? translate(locale, "loading")}</p>
         {info?.path ? <p className="mono text-xs">{info.path}</p> : null}
-        <p className="type-meta">Backend: {info?.backend ?? ""}. Schema {info?.schemaVersion ?? "-"}. Favorites {info?.favoriteCount ?? 0}. Recent {info?.recentCount ?? 0}.</p>
+        <p className="type-meta">{translate(locale, "storageCounts").replace("{backend}", info?.backend ?? "").replace("{schema}", String(info?.schemaVersion ?? "-")).replace("{favorites}", String(info?.favoriteCount ?? 0)).replace("{recent}", String(info?.recentCount ?? 0))}</p>
         <div className="flex flex-wrap gap-2">
           <Button onClick={() => void run(clearHistory, translate(locale, "historyCleared"))}>{translate(locale, "clearHistory")}</Button>
           <Button onClick={() => void run(clearFavorites, translate(locale, "favoritesCleared"))}>{translate(locale, "clearFavorites")}</Button>

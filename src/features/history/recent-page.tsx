@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 ToolZen Contributors
 
-import { PageHeader } from "@/components/layout/page-header";
+import { toolCopy } from "@/lib/catalog-copy";
+import { formatLocal } from "@/lib/format";
 import { translate } from "@/lib/i18n";
 import { usePreferencesStore } from "@/stores/preferences-store";
 import { toolRegistry } from "@/tools/registry";
@@ -17,20 +18,22 @@ export function RecentPage() {
     return true;
   });
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-5">
-      <PageHeader title={translate(locale, "recent")} description={translate(locale, "emptyRecent")} />
-      {entries.length === 0 ? <p className="empty">{translate(locale, "emptyRecent")}</p> : null}
-      <ul className="divide-y divide-line rounded-lg border border-line">
+    <div className="flex w-full flex-col gap-5">
+      <header>
+        <h1 className="type-display">{translate(locale, "recent")}</h1>
+        {entries.length === 0 ? <p className="type-body mt-2 text-subtle">{translate(locale, "emptyRecent")}</p> : null}
+      </header>
+      <ul className="divide-y divide-line overflow-hidden rounded-md border border-line">
         {entries.map((entry) => {
           const tool = toolRegistry.get(entry.toolId);
           return (
             <li key={entry.toolId}>
-              <button type="button" className="flex w-full items-center justify-between px-3 py-3 text-left hover:bg-muted" onClick={() => void navigate({ name: "tool", toolId: entry.toolId })}>
-                <span>
-                  <span className="block text-sm font-medium">{tool?.meta.name ?? entry.toolId}</span>
-                  <span className="block text-xs text-faint">Opened, not a record of what you processed.</span>
+              <button type="button" className="row-btn min-h-12" onClick={() => void navigate({ name: "tool", toolId: entry.toolId })}>
+                <span className="min-w-0 flex-1">
+                  <span className="block type-title">{tool ? toolCopy(locale, tool.meta.id).short : entry.toolId}</span>
+                  <span className="type-meta">{translate(locale, "recentHint")}</span>
                 </span>
-                <span className="text-xs text-subtle">{new Date(entry.openedAt).toLocaleString()}</span>
+                <span className="type-meta shrink-0">{formatLocal(locale, entry.openedAt)}</span>
               </button>
             </li>
           );

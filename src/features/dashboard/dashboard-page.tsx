@@ -2,6 +2,7 @@
 // Copyright 2026 ToolZen Contributors
 
 import { toolCopy } from "@/lib/catalog-copy";
+import { categoryAvailability, formatLocal } from "@/lib/format";
 import { translate } from "@/lib/i18n";
 import { usePreferencesStore } from "@/stores/preferences-store";
 import { CATEGORIES } from "@/tools/categories";
@@ -43,25 +44,27 @@ export function DashboardPage() {
   }).slice(0, 4);
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-5">
+    <div className="flex w-full flex-col gap-6">
       <header>
-        <h1 className="type-title">ToolZen</h1>
-        <p className="type-meta">{translate(locale, "appDescription")}</p>
+        <h1 className="type-display">{translate(locale, "startWork")}</h1>
+        <p className="type-body mt-2 text-subtle">{translate(locale, "appDescription")}</p>
       </header>
       <section>
-        <h2 className="type-label text-subtle">{translate(locale, "startWork")}</h2>
-        <ul className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {start.map((tool) => (
-            <li key={tool.meta.id}>
-              <button type="button" className="panel row-btn h-full" onClick={() => void navigate({ name: "tool", toolId: tool.meta.id })}>
-                <ToolIcon name={tool.meta.icon} className="size-4 shrink-0" />
-                <span className="min-w-0">
-                  <span className="block text-sm font-semibold">{toolCopy(locale, tool.meta.id).short}</span>
-                  <span className="type-meta">{translate(locale, "statusReady")}</span>
-                </span>
-              </button>
-            </li>
-          ))}
+        <ul className="grid grid-cols-1 overflow-hidden rounded-md border border-line md:grid-cols-2 xl:grid-cols-3">
+          {start.map((tool) => {
+            const copy = toolCopy(locale, tool.meta.id);
+            return (
+              <li key={tool.meta.id} className="border-line md:border-r md:[&:nth-child(2n)]:border-r-0 xl:[&:nth-child(2n)]:border-r xl:[&:nth-child(3n)]:border-r-0 border-b last:border-b-0">
+                <button type="button" className="row-btn h-full min-h-12 items-start py-3" onClick={() => void navigate({ name: "tool", toolId: tool.meta.id })}>
+                  <ToolIcon name={tool.meta.icon} className="mt-0.5 size-4 shrink-0" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block type-title">{copy.short}</span>
+                    <span className="type-meta">{copy.blurb}</span>
+                  </span>
+                </button>
+              </li>
+            );
+          })}
         </ul>
       </section>
       {favoriteTools.length > 0 ? (
@@ -89,7 +92,7 @@ export function DashboardPage() {
                 <li key={entry.toolId}>
                   <button type="button" className="row-btn" onClick={() => void navigate({ name: "tool", toolId: entry.toolId })}>
                     <span className="min-w-0 flex-1 truncate">{tool ? toolCopy(locale, tool.meta.id).short : entry.toolId}</span>
-                    <span className="type-meta">{new Date(entry.openedAt).toLocaleString()}</span>
+                    <span className="type-meta">{formatLocal(locale, entry.openedAt)}</span>
                   </button>
                 </li>
               );
@@ -109,8 +112,8 @@ export function DashboardPage() {
               <li key={category.id}>
                 <button type="button" className="row-btn" onClick={() => void navigate({ name: "category", category: category.id })}>
                   <ToolIcon name={category.icon} className="size-4" />
-                  <span className="font-medium">{category.name}</span>
-                  <span className="type-meta ml-auto">{translate(locale, "categoryCounts").replace("{ready}", String(ready)).replace("{partial}", String(partial)).replace("{unavailable}", String(unavailable))}</span>
+                  <span className="font-medium">{translate(locale, category.id === "pdf" ? "catPdf" : category.id === "conversion" ? "catConvert" : category.id === "image" ? "catImage" : "catOcr")}</span>
+                  <span className="type-meta ml-auto text-right">{categoryAvailability(locale, ready, partial, unavailable)}</span>
                 </button>
               </li>
             );

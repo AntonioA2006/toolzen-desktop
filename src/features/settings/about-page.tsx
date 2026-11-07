@@ -19,14 +19,14 @@ export function AboutPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-5">
+    <div className="flex w-full max-w-3xl flex-col gap-5">
       <PageHeader title={translate(locale, "about")} description={translate(locale, "aboutLead")} />
       <dl className="grid gap-3 text-sm">
-        <div><dt className="text-faint">Version</dt><dd>{APP_VERSION}</dd></div>
-        <div><dt className="text-faint">Identifier</dt><dd className="font-mono text-xs">{APP_IDENTIFIER}</dd></div>
-        <div><dt className="text-faint">License</dt><dd>{LICENSE_SPDX}. {COPYRIGHT_NOTICE}.</dd></div>
+        <div><dt className="type-meta">{translate(locale, "versionLabel")}</dt><dd>{APP_VERSION}</dd></div>
+        <div><dt className="type-meta">{translate(locale, "identifierLabel")}</dt><dd className="mono text-xs">{APP_IDENTIFIER}</dd></div>
+        <div><dt className="type-meta">{translate(locale, "licenseLabel")}</dt><dd>{LICENSE_SPDX}. {COPYRIGHT_NOTICE}.</dd></div>
       </dl>
-      <p className="max-w-2xl text-sm text-subtle">You can use, modify, and distribute this project, including for commercial use, under the Apache License 2.0. Keep the applicable copyright and license notices. The license includes a patent grant that ends if you file litigation claiming the work infringes a patent. The names ToolZen and tools-zen.com are not granted as trademarks by the license.</p>
+      <p className="type-body max-w-2xl text-subtle">{translate(locale, "aboutLicense")}</p>
       <div className="flex flex-wrap gap-2">
         <Button onClick={() => void open(WEBSITE_URL)}>{translate(locale, "openWebsite")}</Button>
         <Button onClick={() => void open(REPOSITORY_URL)}>{translate(locale, "openRepository")}</Button>
