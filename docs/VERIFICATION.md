@@ -69,7 +69,7 @@ These are captures of the running page, not drawn mockups.
 
 - A native Tauri window was not opened. `cargo test` compiled the Tauri crate against the installed WebKitGTK development libraries. `apt-get` reported configuration errors for `fuse3`, `xdg-desktop-portal`, and `xdg-desktop-portal-gtk` after the WebKit and GTK dev packages were installed. That can block a desktop session even though the library tests passed.
 - `npm run tauri:build` was not run, so there is no platform installer and no code-signing result.
-- GitHub's license detector was not queried before push. Do not treat the local `LICENSE` match as GitHub having labeled the repository.
+- After push, `gh api repos/AntonioA2006/toolzen-desktop/license` returned HTTP 404. GitHub has not labeled the default branch. `GET /contents/LICENSE?ref=cursor/toolzen-desktop-foundation-99ce` does return the file (11358 bytes). That is not the same as the license detector accepting it.
 - CI in `.github/workflows/ci.yml` was not observed on a runner from this environment.
 
 ## License metadata checked
