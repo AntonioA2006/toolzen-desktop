@@ -33,7 +33,7 @@
     "targets": ["nsis", "app", "dmg", "deb", "appimage"],
     "windows": {
       "webviewInstallMode": {
-        "type": "downloadBootstrapper",
+        "type": "offlineInstaller",
         "silent": false
       },
       "nsis": {

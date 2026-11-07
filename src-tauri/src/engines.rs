@@ -479,6 +479,113 @@ mod tests {
     }
 
     #[test]
+    fn extract_keeps_only_the_requested_page() {
+        let bytes = one_page();
+        let merged = run_engine(EngineJob {
+            tool_id: "merge-pdf".into(),
+            options: Value::Object(serde_json::Map::new()),
+            files: vec![file(&bytes), file(&bytes)],
+        })
+        .unwrap();
+        let mut options = serde_json::Map::new();
+        options.insert("pages".into(), Value::String("2".into()));
+        let output = run_engine(EngineJob {
+            tool_id: "extract-pdf-pages".into(),
+            options: Value::Object(options),
+            files: vec![EngineFile {
+                name: "m.pdf".into(),
+                bytes_base64: merged.bytes_base64,
+            }],
+        })
+        .unwrap();
+        let doc = Document::load_mem(&base64_decode(&output.bytes_base64).unwrap()).unwrap();
+        assert_eq!(doc.get_pages().len(), 1);
+        let page_id = doc.get_pages()[&1];
+        let media = doc
+            .get_dictionary(page_id)
+            .unwrap()
+            .get(b"MediaBox")
+            .unwrap();
+        assert!(matches!(media, Object::Array(_)));
+    }
+
+    #[test]
+    fn rotate_sets_the_page_rotate_entry() {
+        let mut options = serde_json::Map::new();
+        options.insert("rotation".into(), Value::from(90));
+        let output = run_engine(EngineJob {
+            tool_id: "rotate-pdf".into(),
+            options: Value::Object(options),
+            files: vec![file(&one_page())],
+        })
+        .unwrap();
+        let doc = Document::load_mem(&base64_decode(&output.bytes_base64).unwrap()).unwrap();
+        let page_id = doc.get_pages()[&1];
+        match doc.get_dictionary(page_id).unwrap().get(b"Rotate").unwrap() {
+            Object::Integer(value) => assert_eq!(*value, 90),
+            other => panic!("unexpected rotate {other:?}"),
+        }
+    }
+
+    #[test]
+    fn malformed_empty_and_oversized_inputs_fail() {
+        let bad = run_engine(EngineJob {
+            tool_id: "merge-pdf".into(),
+            options: Value::Object(serde_json::Map::new()),
+            files: vec![file(b"not a pdf"), file(b"also not")],
+        })
+        .unwrap_err();
+        assert_eq!(bad, "not_pdf");
+
+        let mut empty_options = serde_json::Map::new();
+        empty_options.insert("rotation".into(), Value::from(90));
+        let empty = run_engine(EngineJob {
+            tool_id: "rotate-pdf".into(),
+            options: Value::Object(empty_options),
+            files: vec![EngineFile {
+                name: "empty.pdf".into(),
+                bytes_base64: String::new(),
+            }],
+        })
+        .unwrap_err();
+        assert!(empty == "not_pdf" || empty == "file_data");
+
+        let huge = "A".repeat(25 * 1024 * 1024 * 2 + 8);
+        let mut large_options = serde_json::Map::new();
+        large_options.insert("rotation".into(), Value::from(90));
+        let large = run_engine(EngineJob {
+            tool_id: "rotate-pdf".into(),
+            options: Value::Object(large_options),
+            files: vec![EngineFile {
+                name: "big.pdf".into(),
+                bytes_base64: huge,
+            }],
+        })
+        .unwrap_err();
+        assert_eq!(large, "file_too_large");
+
+        let mut options = serde_json::Map::new();
+        options.insert("pages".into(), Value::String("9".into()));
+        let missing = run_engine(EngineJob {
+            tool_id: "extract-pdf-pages".into(),
+            options: Value::Object(options),
+            files: vec![file(&one_page())],
+        })
+        .unwrap_err();
+        assert_eq!(missing, "pages");
+
+        let mut wipe = serde_json::Map::new();
+        wipe.insert("pages".into(), Value::String("1".into()));
+        let all = run_engine(EngineJob {
+            tool_id: "delete-pdf-pages".into(),
+            options: Value::Object(wipe),
+            files: vec![file(&one_page())],
+        })
+        .unwrap_err();
+        assert_eq!(all, "delete_all");
+    }
+
+    #[test]
     fn unavailable_tool_does_not_produce_a_file() {
         let error = run_engine(EngineJob {
             tool_id: "compress-pdf".into(),

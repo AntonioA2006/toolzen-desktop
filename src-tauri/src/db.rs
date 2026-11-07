@@ -349,7 +349,7 @@ fn schema_version(conn: &Connection) -> AppResult<i64> {
 
 fn default_preferences() -> Preferences {
     Preferences {
-        theme: "dark".into(),
+        theme: "light".into(),
         language: "en".into(),
         startup_page: "home".into(),
         execution_mode: "local".into(),
@@ -705,7 +705,7 @@ mod tests {
         migrate(&db.conn).unwrap();
         assert_eq!(schema_version(&db.conn).unwrap(), 2);
         let prefs = db.load_state().unwrap().preferences;
-        assert_eq!(prefs.theme, "dark");
+        assert_eq!(prefs.theme, "light");
         assert!(!prefs.ai_retention_opt_in);
     }
 
