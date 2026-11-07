@@ -1,0 +1,23 @@
+[package]
+name = "toolzen-desktop"
+version = "0.1.0"
+description = "ToolZen Desktop — local-first utilities"
+authors = ["ToolZen Contributors"]
+license = "Apache-2.0"
+edition = "2021"
+rust-version = "1.90"
+
+[lib]
+name = "toolzen_desktop_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.7", features = [] }
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rusqlite = { version = "0.41", features = ["bundled"] }
+tauri = { version = "2.12", features = [] }
+tauri-plugin-opener = "2.7.2"
+thiserror = "2"

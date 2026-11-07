@@ -1,0 +1,20 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Local-first shell. In-process commands only, no shell plugin, no broad filesystem plugin, and an explicit URL allow list for user-opened links.",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    {
+      "identifier": "opener:allow-open-url",
+      "allow": [
+        { "url": "https://tools-zen.com/*" },
+        { "url": "https://github.com/AntonioA2006/toolzen-desktop" },
+        { "url": "https://github.com/AntonioA2006/toolzen-desktop/*" },
+        { "url": "https://www.apache.org/licenses/LICENSE-2.0" }
+      ]
+    },
+    "opener:deny-open-path",
+    "opener:deny-reveal-item-in-dir"
+  ]
+}

@@ -1,0 +1,106 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+/* Copyright 2026 ToolZen Contributors */
+
+@import "tailwindcss";
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/jetbrains-mono/400.css";
+@import "@fontsource/jetbrains-mono/500.css";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --color-canvas: var(--canvas);
+  --color-sidebar: var(--sidebar);
+  --color-elevated: var(--elevated);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-subtle: var(--subtle);
+  --color-faint: var(--faint);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-danger: var(--danger);
+  --color-ok: var(--ok);
+}
+
+:root {
+  color-scheme: light;
+  --canvas: #f5f6f8;
+  --sidebar: #eef0f3;
+  --elevated: #ffffff;
+  --muted: #e7eaee;
+  --line: #d9dee6;
+  --ink: #171a1f;
+  --subtle: #4d5562;
+  --faint: #6d7582;
+  --accent: #2d4f78;
+  --accent-ink: #f7f9fb;
+  --danger: #8d2f2f;
+  --ok: #1d6b45;
+  --shadow: 0 1px 2px rgba(18, 20, 24, 0.06);
+  --radius: 8px;
+}
+
+.dark {
+  color-scheme: dark;
+  --canvas: #101114;
+  --sidebar: #16181d;
+  --elevated: #1c1f26;
+  --muted: #262a33;
+  --line: #2d323c;
+  --ink: #eceef2;
+  --subtle: #b4bac4;
+  --faint: #8b93a0;
+  --accent: #9bb6dc;
+  --accent-ink: #121418;
+  --danger: #e3a0a0;
+  --ok: #8dceb0;
+  --shadow: none;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+@layer base {
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+    color: inherit;
+  }
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
