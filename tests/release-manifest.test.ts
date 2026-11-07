@@ -36,7 +36,7 @@ describe("release manifest", () => {
     expect(validateHistory({ schemaVersion: 1, releases: [release, release] })).toContain("duplicate version 0.1.1");
     const badHash = { ...asset, sha256: "zz" };
     const hashErrors = validateHistory({ schemaVersion: 1, releases: [{ ...release, assets: [badHash] }] });
-    expect(hashErrors.some((error) => error.startsWith("sha256"))).toBe(true);
+    expect(hashErrors.some((error: string) => error.startsWith("sha256"))).toBe(true);
     const withdrawn = {
       ...release,
       withdrawn: true,
@@ -64,7 +64,7 @@ describe("release manifest", () => {
         outputDir: output,
         signing: { windows: "unsigned", macos: "unsigned" },
       });
-      expect(document.releases[0].assets.map((asset) => asset.os)).toEqual(["windows"]);
+      expect(document.releases[0].assets.map((asset: { os: string }) => asset.os)).toEqual(["windows"]);
       expect(document.releases[0].assets[0].downloadUrl).toBeNull();
       expect(document.releases[0].assets[0].fileName).toBe("ToolZen_0.1.1_windows_x64-setup.exe");
       expect(classifyInstaller("ToolZen_0.1.1_aarch64.dmg")?.os).toBe("macos");
