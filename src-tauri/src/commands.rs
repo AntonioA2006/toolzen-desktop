@@ -40,3 +40,11 @@ pub fn storage_info(state: State<'_, AppState>) -> Result<StorageInfo, String> {
 pub fn run_engine(job: EngineJob) -> Result<EngineOutput, String> {
     engines::run_engine(job)
 }
+
+#[tauri::command]
+pub fn save_output(
+    suggested_name: String,
+    bytes_base64: String,
+) -> Result<crate::output::SaveResult, String> {
+    crate::output::save_output(suggested_name, bytes_base64)
+}

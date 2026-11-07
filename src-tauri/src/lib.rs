@@ -6,6 +6,7 @@ pub mod db;
 pub mod engines;
 pub mod error;
 pub mod execution;
+pub mod output;
 
 use std::fs;
 use std::sync::Mutex;
@@ -34,7 +35,8 @@ pub fn run() {
             commands::load_state,
             commands::apply_op,
             commands::storage_info,
-            commands::run_engine
+            commands::run_engine,
+            commands::save_output
         ])
         .run(tauri::generate_context!())
         .expect("ToolZen failed to start");

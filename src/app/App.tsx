@@ -2,8 +2,7 @@
 // Copyright 2026 ToolZen Contributors
 
 import { useEffect } from "react";
-import { Sidebar } from "@/components/layout/sidebar";
-import { TopBar } from "@/components/layout/top-bar";
+import { SiteHeader } from "@/components/site/site-header";
 import { CommandPalette } from "@/features/command-palette/command-palette";
 import { DashboardPage } from "@/features/dashboard/dashboard-page";
 import { ExplorerPage } from "@/features/explorer/explorer-page";
@@ -11,10 +10,10 @@ import { FavoritesPage } from "@/features/favorites/favorites-page";
 import { RecentPage } from "@/features/history/recent-page";
 import { AboutPage } from "@/features/settings/about-page";
 import { SettingsPage } from "@/features/settings/settings-page";
-import { useMediaQuery } from "@/hooks/use-media-query";
 import { ExecutionManager, localExecutionProvider, permissionManager, setExecutionManager } from "@/services/execution";
 import { registerLocalToolHandlers } from "@/tools/register-handlers";
 import { toolRegistry } from "@/tools/registry";
+import { translate } from "@/lib/i18n";
 import { usePreferencesStore } from "@/stores/preferences-store";
 import { useSessionStore } from "@/stores/session-store";
 import { useUiStore } from "@/stores/ui-store";
@@ -35,19 +34,14 @@ export function App() {
   const status = usePreferencesStore((state) => state.status);
   const error = usePreferencesStore((state) => state.error);
   const theme = usePreferencesStore((state) => state.preferences.theme);
+  const locale = usePreferencesStore((state) => state.preferences.language);
   const route = useSessionStore((state) => state.route);
   const setPaletteOpen = useUiStore((state) => state.setPaletteOpen);
   const paletteOpen = useUiStore((state) => state.paletteOpen);
-  const narrow = useMediaQuery("(max-width: 960px)");
-  const setSidebarCollapsed = useUiStore((state) => state.setSidebarCollapsed);
 
   useEffect(() => {
     void hydrate();
   }, [hydrate]);
-
-  useEffect(() => {
-    if (narrow) setSidebarCollapsed(true);
-  }, [narrow, setSidebarCollapsed]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -87,16 +81,13 @@ export function App() {
   }, [route]);
 
   return (
-    <div className="flex h-full min-h-0 bg-canvas text-ink">
-      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:rounded focus:bg-elevated focus:px-3 focus:py-2">Skip to content</a>
-      <Sidebar />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <TopBar />
-        <main id="main" className="min-h-0 flex-1 overflow-auto px-6 py-6" key={routeKey(route)}>
-          {status === "error" ? <p className="mb-4 text-sm text-danger">{error}</p> : null}
-          {status === "loading" ? <p className="text-sm text-subtle">Loading local preferences.</p> : <RouteView />}
-        </main>
-      </div>
+    <div className="site-shell">
+      <a className="skip-link" href="#contenido">{translate(locale, "skip")}</a>
+      <SiteHeader />
+      <main id="contenido" key={routeKey(route)}>
+        {status === "error" ? <p className="alert alert-danger">{error}</p> : null}
+        {status === "loading" ? <p className="empty-state">…</p> : <RouteView />}
+      </main>
       <CommandPalette />
     </div>
   );
@@ -107,12 +98,18 @@ function RouteView() {
   if (route.name === "home") return <DashboardPage />;
   if (route.name === "tools") return <ExplorerPage />;
   if (route.name === "category") return <ExplorerPage category={route.category} />;
-  if (route.name === "favorites") return <FavoritesPage />;
-  if (route.name === "recent") return <RecentPage />;
-  if (route.name === "settings") return <SettingsPage />;
-  if (route.name === "about") return <AboutPage />;
-  const tool = toolRegistry.get(route.toolId);
-  if (!tool) return <p className="text-sm text-subtle">That tool is not in the registry.</p>;
-  const Page = tool.Component;
-  return <Page />;
+  if (route.name === "tool") {
+    const tool = toolRegistry.get(route.toolId);
+    if (!tool) return <p className="empty-state">That tool is not in the registry.</p>;
+    const Page = tool.Component;
+    return <Page />;
+  }
+  return (
+    <div className="site-main">
+      {route.name === "favorites" ? <FavoritesPage /> : null}
+      {route.name === "recent" ? <RecentPage /> : null}
+      {route.name === "settings" ? <SettingsPage /> : null}
+      {route.name === "about" ? <AboutPage /> : null}
+    </div>
+  );
 }

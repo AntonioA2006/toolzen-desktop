@@ -9,6 +9,26 @@
 @import "@fontsource/plus-jakarta-sans/400-italic.css";
 @import "@fontsource/jetbrains-mono/400.css";
 @import "@fontsource/jetbrains-mono/500.css";
+@import "./toolzen-web.css";
+
+/* Desktop controls reuse the web classes on buttons. The site CSS targets anchors. */
+button.brand,
+button.nav-link,
+button.tool-card,
+button.pillar-link,
+.search-results button {
+  font: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+}
+button.tool-card { width: 100%; }
+button.brand { display: inline-flex; align-items: center; }
+.desktop-local-nav { padding: 0 1.25rem 0.75rem; }
+html, body, #root { min-height: 100%; }
+.site-shell { min-height: 100%; }
+.site-header .nav-cta { white-space: nowrap; }
 
 @theme {
   --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
