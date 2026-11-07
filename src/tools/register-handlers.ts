@@ -2,16 +2,15 @@
 // Copyright 2026 ToolZen Contributors
 
 import { localExecutionProvider, type LocalExecutionProvider } from "@/services/execution";
-import { runBase64, type Base64Input } from "./base64/process";
-import { formatJson, type JsonFormatterInput } from "./json-formatter/process";
-import { generateUuids, type UuidGeneratorInput } from "./uuid-generator/process";
+import { MVP_TOOLS } from "./mvp/specs";
+import { runMvpTool } from "./mvp/run";
 
 let registered = false;
 
 export function registerLocalToolHandlers(provider: LocalExecutionProvider = localExecutionProvider): void {
   if (registered && provider === localExecutionProvider) return;
-  provider.register("json-formatter", (input) => formatJson(input as JsonFormatterInput));
-  provider.register("uuid-generator", (input) => generateUuids(input as UuidGeneratorInput));
-  provider.register("base64", (input) => runBase64(input as Base64Input));
+  for (const tool of MVP_TOOLS) {
+    provider.register(tool.id, (input) => runMvpTool(tool.id, input as { files?: []; options?: Record<string, unknown> }));
+  }
   if (provider === localExecutionProvider) registered = true;
 }

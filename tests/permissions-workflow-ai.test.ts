@@ -14,15 +14,30 @@ import { executeWorkflow } from "@/services/workflows/execute";
 import { duplicateWorkflow, jsonThenBase64Template } from "@/services/workflows/template";
 import type { WorkflowDefinition } from "@/services/workflows/types";
 import { planWorkflow } from "@/services/workflows/plan";
-import { registerLocalToolHandlers } from "@/tools/register-handlers";
-import { toolRegistry } from "@/tools/registry";
+import { formatJson, type JsonFormatterInput } from "@/tools/json-formatter/process";
 import { jsonFormatterTool } from "@/tools/json-formatter/definition";
+import { runBase64, type Base64Input } from "@/tools/base64/process";
+import { base64Tool } from "@/tools/base64/definition";
+import type { ToolRegistry } from "@/tools/types";
+
+const exampleRegistry: ToolRegistry = {
+  list: () => [
+    { ...jsonFormatterTool, Component: () => null },
+    { ...base64Tool, Component: () => null },
+  ],
+  get: (id) => exampleRegistry.list().find((tool) => tool.meta.id === id),
+};
+
+function registerExamples(local: LocalExecutionProvider) {
+  local.register("json-formatter", (input) => formatJson(input as JsonFormatterInput));
+  local.register("base64", (input) => runBase64(input as Base64Input));
+}
 
 function stack() {
   const local = new LocalExecutionProvider();
-  registerLocalToolHandlers(local);
+  registerExamples(local);
   const permissions = new PermissionManager();
-  const manager = new ExecutionManager(toolRegistry, local, permissions, null);
+  const manager = new ExecutionManager(exampleRegistry, local, permissions, null);
   return { local, permissions, manager };
 }
 
@@ -59,19 +74,19 @@ describe("workflows", () => {
   it("reuses registry tools through the execution manager", async () => {
     const { manager } = stack();
     let providerCalls = 0;
-    const watched = new ExecutionManager(toolRegistry, new LocalExecutionProvider(), new PermissionManager(), null);
+    const watched = new ExecutionManager(exampleRegistry, new LocalExecutionProvider(), new PermissionManager(), null);
     const local = new LocalExecutionProvider();
-    registerLocalToolHandlers(local);
+    registerExamples(local);
     const original = local.execute.bind(local);
     local.execute = async (request, startedAt) => {
       providerCalls += 1;
       return original(request, startedAt);
     };
-    const live = new ExecutionManager(toolRegistry, local, new PermissionManager(), null);
+    const live = new ExecutionManager(exampleRegistry, local, new PermissionManager(), null);
     const definition = jsonThenBase64Template("2026-11-07T00:00:00.000Z");
     const run = await executeWorkflow(definition, {
       manager: live,
-      registry: toolRegistry,
+      registry: exampleRegistry,
       parameters: { source: '{"b":1,"a":2}' },
     });
     expect(providerCalls).toBe(2);
@@ -92,7 +107,7 @@ describe("workflows", () => {
         nodes: template.version.nodes.map((node) => (node.id === "start" ? { ...node, config: { kind: "trigger", trigger: "scheduled" } } : node)),
       },
     };
-    expect(planWorkflow(scheduled, toolRegistry).ok).toBe(false);
+    expect(planWorkflow(scheduled, exampleRegistry).ok).toBe(false);
 
     const cloudNode: WorkflowDefinition = {
       ...template,
@@ -101,7 +116,7 @@ describe("workflows", () => {
         nodes: template.version.nodes.map((node) => (node.id === "format" ? { ...node, requirements: { ...node.requirements, mode: "cloud" } } : node)),
       },
     };
-    const run = await executeWorkflow(cloudNode, { manager, registry: toolRegistry, parameters: { source: "{}" } });
+    const run = await executeWorkflow(cloudNode, { manager, registry: exampleRegistry, parameters: { source: "{}" } });
     expect(run.status).toBe("failed");
     expect(run.history.errorCode).toBe("mode_unsupported");
     expect(run.history.nodeResults.find((result) => result.nodeId === "encode")?.status).not.toBe("succeeded");
@@ -109,7 +124,7 @@ describe("workflows", () => {
 
   it("follows only the matching conditional branch and can be duplicated", async () => {
     const local = new LocalExecutionProvider();
-    const manager = new ExecutionManager(toolRegistry, local, new PermissionManager(), null);
+    const manager = new ExecutionManager(exampleRegistry, local, new PermissionManager(), null);
     const definition: WorkflowDefinition = {
       metadata: { id: "branch", name: "Branch", description: "Conditional", createdAt: "2026-11-07T00:00:00.000Z", updatedAt: "2026-11-07T00:00:00.000Z", tags: [] },
       version: {
@@ -134,7 +149,7 @@ describe("workflows", () => {
         ],
       },
     };
-    const run = await executeWorkflow(definition, { manager, registry: toolRegistry, parameters: { flag: false } });
+    const run = await executeWorkflow(definition, { manager, registry: exampleRegistry, parameters: { flag: false } });
     expect(run.outputs.taken).toBe("no");
     expect(run.history.nodeResults.find((result) => result.nodeId === "yes")?.status).toBe("skipped");
     const copy = duplicateWorkflow(definition, "branch-copy", "2026-11-07T00:00:01.000Z");
@@ -150,7 +165,7 @@ describe("workflows", () => {
       if (attempts === 1) throw new Error("temporary");
       return { formatted: "{}", byteLength: 2 };
     });
-    const manager = new ExecutionManager(toolRegistry, local, new PermissionManager(), null);
+    const manager = new ExecutionManager(exampleRegistry, local, new PermissionManager(), null);
     const definition = jsonThenBase64Template("2026-11-07T00:00:00.000Z");
     definition.version.nodes[1]?.requirements && (definition.version.nodes[1].requirements.mode = "local");
     const retrying: WorkflowDefinition = {
@@ -162,7 +177,7 @@ describe("workflows", () => {
         connections: definition.version.connections.filter((connection) => connection.toNodeId === "format"),
       },
     };
-    const run = await executeWorkflow(retrying, { manager, registry: toolRegistry, parameters: { source: "{}" } });
+    const run = await executeWorkflow(retrying, { manager, registry: exampleRegistry, parameters: { source: "{}" } });
     expect(attempts).toBe(2);
     expect(run.status).toBe("succeeded");
     expect(run.history.nodeResults.find((result) => result.nodeId === "format")?.attempts).toBe(2);
@@ -192,14 +207,14 @@ describe("AI planning foundation", () => {
 
   it("builds proposals from the registry schema and executes only after a matching approval", async () => {
     const { manager, permissions } = stack();
-    const catalog = buildToolCatalog(toolRegistry);
+    const catalog = buildToolCatalog(exampleRegistry);
     const json = catalog.find((entry) => entry.toolId === "json-formatter");
     expect(json?.parameters).toBe(jsonFormatterTool.contract.input);
-    expect(toolCallToIntentStep({ id: "call", toolId: "missing", arguments: {} }, toolRegistry).ok).toBe(false);
+    expect(toolCallToIntentStep({ id: "call", toolId: "missing", arguments: {} }, exampleRegistry).ok).toBe(false);
 
     const proposed = await proposeWorkflowFromIntent(
       { label: "Format JSON", steps: [{ toolId: "json-formatter", literals: { source: '{"a":1}', indent: 2 } }] },
-      toolRegistry,
+      exampleRegistry,
       "2026-11-07T00:00:00.000Z",
     );
     expect(proposed.ok).toBe(true);
@@ -210,7 +225,7 @@ describe("AI planning foundation", () => {
       approval: { planHash: "nope", statement: "Run this local workflow", accepted: [] },
       manager,
       permissions,
-      registry: toolRegistry,
+      registry: exampleRegistry,
     });
     expect(rejected.ok).toBe(false);
 
@@ -224,7 +239,7 @@ describe("AI planning foundation", () => {
       },
       manager,
       permissions,
-      registry: toolRegistry,
+      registry: exampleRegistry,
     });
     expect(approved.ok).toBe(true);
     if (approved.ok) {

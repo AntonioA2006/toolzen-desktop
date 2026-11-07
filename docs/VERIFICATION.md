@@ -5,6 +5,14 @@
 
 This file records what was implemented, which commands were run, and what was not claimed.
 
+## 2026-11-07 reference alignment
+
+The visible catalogue is the twenty tools in `src/Catalog/Infrastructure/Persistence/CatalogDefinitions.php` from AntonioA2006/ToolZen `b600a8d6646cd9bf39b2d20f3fff117b914ce4f2`. Colors, radius, and the document-Z mark follow `resources/css/app.css` and `resources/views/components/brand.blade.php`. Plus Jakarta Sans is bundled under the SIL OFL. The earlier JSON, UUID, and Base64 tools are not shown.
+
+`npx tsc --noEmit` passed. `npx vitest run` passed 34 tests. `cargo test --manifest-path src-tauri/Cargo.toml --offline --lib` passed 8 tests, including a qpdf merge of two Ghostscript pages that reports 2 pages, and a Word-to-PDF call that does not invent a PDF when LibreOffice is absent.
+
+Delete PDF pages, crop PDF, and watermark PDF return an error and write nothing. LibreOffice and Tesseract are not installed in this environment. Ghostscript is AGPL and Poppler is GPL; neither is vendored.
+
 ## Implemented in this release
 
 - Tauri 2 shell with React 19, strict TypeScript, Vite, Tailwind CSS 4, Radix-based controls, Lucide, Motion, and Zustand.

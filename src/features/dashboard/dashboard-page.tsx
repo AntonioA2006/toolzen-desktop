@@ -15,29 +15,29 @@ export function DashboardPage() {
   const recent = usePreferencesStore((state) => state.recent);
   const navigate = usePreferencesStore((state) => state.navigate);
   const toggleFavorite = usePreferencesStore((state) => state.toggleFavorite);
-  const available = toolRegistry.list().filter((tool) => tool.meta.availability === "available");
+  const popular = toolRegistry.list().filter((tool) => ["merge-pdf", "compress-pdf", "word-to-pdf", "pdf-to-jpg", "compress-image", "image-to-text"].includes(tool.meta.id));
   const used = [...usage].sort((a, b) => b.openCount - a.openCount);
   const quick = used.length > 0 ? used.flatMap((item) => {
     const tool = toolRegistry.get(item.toolId);
     return tool ? [tool] : [];
-  }).slice(0, 3) : available;
+  }).slice(0, 6) : popular;
 
   const distinctRecent = uniqueRecent(recent);
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-8">
-      <PageHeader title="ToolZen" description="Local utilities for technical work. Processing stays on this device." />
+      <PageHeader title="ToolZen" description="PDF, image, conversion, and OCR tools. Files stay on this device." />
       <div className="grid gap-3 sm:grid-cols-3">
         <Indicator icon={<WifiOff className="size-4" />} title="Offline" body="No account, upload, or remote processing in this release." />
         <Indicator icon={<Lock className="size-4" />} title="On device" body="Tool input and output are not written to history." />
         <Indicator icon={<Shield className="size-4" />} title="No telemetry" body="The app does not send usage analytics." />
       </div>
       <section>
-        <h2 className="text-sm font-semibold">{used.length > 0 ? "From your usage" : "Suggested defaults"}</h2>
+        <h2 className="text-sm font-semibold">{used.length > 0 ? "From your usage" : "Popular tools"}</h2>
         <p className="mt-1 text-sm text-subtle">
           {used.length > 0
             ? "These counts come from tools you opened on this device."
-            : "No usage yet. These are the tools included in this release, not a record of activity."}
+            : "No usage yet. These are the tools marked popular in the ToolZen catalogue, not a record of activity."}
         </p>
         <div className="mt-4 grid gap-3 md:grid-cols-3">
           {quick.map((tool) => (

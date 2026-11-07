@@ -63,7 +63,11 @@ MPL-2.0 crates in this resolution: `cssparser@0.37.0`, `cssparser-macros@0.7.1`,
 
 No crate in the metadata dump had an empty license or a GPL-only license. That statement is limited to the `license` field Cargo published for this resolution. It was not a manual reading of every license file.
 
-### System libraries
+### Optional local engines
+
+The desktop app can spawn `qpdf`, `gs`, `pdftoppm`, `libreoffice`, and `tesseract` when they are already installed. They are not vendored. qpdf and Tesseract are Apache-2.0. Ghostscript is AGPL-3.0. Poppler (`pdftoppm`) is GPL-2.0. LibreOffice is MPL-2.0. Bundling Ghostscript or Poppler into a desktop installer would be a separate license decision and is not done here.
+
+## System libraries
 
 Linux builds link to WebKitGTK, which is LGPL. That obligation belongs to the system library and to anyone who distributes the combined desktop build. It is not removed by the project's Apache-2.0 license.
 

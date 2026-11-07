@@ -46,7 +46,7 @@ function applyState(state: PersistedState, info: StorageInfo | null, port: Persi
 export const usePreferencesStore = create<PreferencesState>((set, get) => ({
   status: "loading",
   preferences: {
-    theme: "dark",
+    theme: "light",
     language: "en",
     startupPage: "home",
     executionMode: "local",

@@ -7,7 +7,8 @@ ToolZen Desktop bundles Inter and JetBrains Mono through the `@fontsource/inter`
 
 The files in this directory are unmodified copies of the license texts shipped with those packages:
 
-- `inter-OFL.txt` — Inter, Copyright 2016 The Inter Project Authors
-- `jetbrains-mono-OFL.txt` — JetBrains Mono, Copyright 2020 The JetBrains Mono Project Authors
+- `plus-jakarta-sans-OFL.txt` — Plus Jakarta Sans, Copyright 2020 The Plus Jakarta Sans Project Authors. This is the UI face, bundled from `@fontsource/plus-jakarta-sans`.
+- `inter-OFL.txt` — Inter, Copyright 2016 The Inter Project Authors. Kept from the earlier shell; the UI no longer loads it.
+- `jetbrains-mono-OFL.txt` — JetBrains Mono, Copyright 2020 The JetBrains Mono Project Authors. Used for file and code text.
 
 Do not replace these texts with the project license.

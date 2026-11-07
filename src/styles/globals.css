@@ -2,14 +2,16 @@
 /* Copyright 2026 ToolZen Contributors */
 
 @import "tailwindcss";
-@import "@fontsource/inter/400.css";
-@import "@fontsource/inter/500.css";
-@import "@fontsource/inter/600.css";
+@import "@fontsource/plus-jakarta-sans/400.css";
+@import "@fontsource/plus-jakarta-sans/500.css";
+@import "@fontsource/plus-jakarta-sans/600.css";
+@import "@fontsource/plus-jakarta-sans/700.css";
+@import "@fontsource/plus-jakarta-sans/400-italic.css";
 @import "@fontsource/jetbrains-mono/400.css";
 @import "@fontsource/jetbrains-mono/500.css";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
   --color-canvas: var(--canvas);
   --color-sidebar: var(--sidebar);
@@ -27,37 +29,40 @@
 
 :root {
   color-scheme: light;
-  --canvas: #f5f6f8;
-  --sidebar: #eef0f3;
+  --tz-blue-600: #1b5cf3;
+  --tz-blue-700: #1445c8;
+  --tz-cyan-400: #22c9f2;
+  --canvas: #f3f7fd;
+  --sidebar: #071235;
   --elevated: #ffffff;
-  --muted: #e7eaee;
-  --line: #d9dee6;
-  --ink: #171a1f;
-  --subtle: #4d5562;
-  --faint: #6d7582;
-  --accent: #2d4f78;
-  --accent-ink: #f7f9fb;
-  --danger: #8d2f2f;
-  --ok: #1d6b45;
-  --shadow: 0 1px 2px rgba(18, 20, 24, 0.06);
-  --radius: 8px;
+  --muted: #eaf1fb;
+  --line: #e0e8f5;
+  --ink: #0c1b33;
+  --subtle: #45587a;
+  --faint: #516487;
+  --accent: #1b5cf3;
+  --accent-ink: #ffffff;
+  --danger: #d64550;
+  --ok: #0f9d6e;
+  --shadow: 0 10px 26px -16px rgba(12, 27, 51, 0.16);
+  --radius: 16px;
 }
 
 .dark {
   color-scheme: dark;
-  --canvas: #101114;
-  --sidebar: #16181d;
-  --elevated: #1c1f26;
-  --muted: #262a33;
-  --line: #2d323c;
-  --ink: #eceef2;
-  --subtle: #b4bac4;
-  --faint: #8b93a0;
-  --accent: #9bb6dc;
-  --accent-ink: #121418;
-  --danger: #e3a0a0;
-  --ok: #8dceb0;
-  --shadow: none;
+  --canvas: #0b1429;
+  --sidebar: #071235;
+  --elevated: #0f1a35;
+  --muted: #16234a;
+  --line: #22315a;
+  --ink: #eef4ff;
+  --subtle: #b3c3e0;
+  --faint: #8d9dbd;
+  --accent: #6f9bff;
+  --accent-ink: #05102b;
+  --danger: #ff8a94;
+  --ok: #4bdca4;
+  --shadow: 0 12px 28px -18px rgba(0, 0, 0, 0.6);
 }
 
 html,

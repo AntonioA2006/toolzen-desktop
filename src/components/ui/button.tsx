@@ -11,7 +11,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: "border-transparent bg-ink text-canvas hover:opacity-90",
+        primary: "border-transparent bg-[var(--tz-blue-600)] text-white hover:bg-[var(--tz-blue-700)]",
         secondary: "border-line bg-elevated hover:bg-muted",
         ghost: "border-transparent bg-transparent hover:bg-muted",
         danger: "border-transparent bg-transparent text-danger hover:bg-muted",

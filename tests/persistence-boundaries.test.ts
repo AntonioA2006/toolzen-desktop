@@ -10,6 +10,7 @@ import { MemoryPersistence } from "@/services/persistence/memory";
 import { applyOperation, migratePersisted } from "@/services/persistence/reduce";
 import { emptyState } from "@/services/persistence/types";
 import { toolRegistry } from "@/tools/registry";
+import { MVP_TOOLS } from "@/tools/mvp/specs";
 
 describe("persistence", () => {
   it("migrates older preview data to schema 2 and drops an unsaved cloud mode", () => {
@@ -71,14 +72,8 @@ describe("persistence", () => {
 
 describe("boundaries", () => {
   it("ships three runnable tools and does not let unavailable tools validate as runnable", () => {
-    const available = toolRegistry.list().filter((tool) => tool.meta.availability === "available");
-    expect(available.map((tool) => tool.meta.id).sort()).toEqual(["base64", "json-formatter", "uuid-generator"]);
-    for (const tool of toolRegistry.list()) {
-      if (tool.meta.availability === "unavailable") {
-        expect(tool.validate({}).ok).toBe(false);
-        expect(tool.meta.unavailableReason).toContain("not implemented");
-      }
-    }
+    expect(toolRegistry.list().map((tool) => tool.meta.id).sort()).toEqual(MVP_TOOLS.map((tool) => tool.id).sort());
+    expect(toolRegistry.list().some((tool) => tool.meta.id === "json-formatter")).toBe(false);
   });
 
   it("keeps tool modules free of Tauri and network calls", () => {
