@@ -5,6 +5,7 @@
 
 ## Unreleased
 
+- 0.1.1 labels the test installer that includes the website layout and the native save dialog, so it is not the earlier `ToolZen_0.1.0_x64-setup.exe`.
 - Limited the reliable set to ten local tools that do not require the user to install qpdf, Ghostscript, Poppler, LibreOffice, or Tesseract.
 - PDF merge, extract, rotate, and delete pages run inside the app with lopdf (MIT).
 - Image compress, resize, crop, WebP, metadata removal, and JPG to PDF run in the webview.

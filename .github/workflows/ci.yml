@@ -64,7 +64,7 @@ jobs:
           done
       - uses: actions/upload-artifact@v4
         with:
-          name: toolzen-${{ matrix.target }}
+          name: toolzen-${{ matrix.target }}-${{ github.sha }}
           path: |
             src-tauri/target/release/bundle/**
             dist-checksums/SHA256SUMS.txt

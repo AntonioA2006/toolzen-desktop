@@ -1,6 +1,6 @@
 [package]
 name = "toolzen-desktop"
-version = "0.1.0"
+version = "0.1.1"
 description = "ToolZen Desktop — local-first utilities"
 authors = ["ToolZen Contributors"]
 license = "Apache-2.0"
