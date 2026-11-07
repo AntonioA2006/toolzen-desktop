@@ -2,13 +2,15 @@
 // Copyright 2026 ToolZen Contributors
 
 import { useEffect } from "react";
-import { SiteHeader } from "@/components/site/site-header";
+import { Sidebar } from "@/components/layout/sidebar";
+import { TopBar } from "@/components/layout/top-bar";
 import { CommandPalette } from "@/features/command-palette/command-palette";
 import { DashboardPage } from "@/features/dashboard/dashboard-page";
 import { ExplorerPage } from "@/features/explorer/explorer-page";
 import { FavoritesPage } from "@/features/favorites/favorites-page";
 import { RecentPage } from "@/features/history/recent-page";
 import { AboutPage } from "@/features/settings/about-page";
+import { PrivacyPage } from "@/features/settings/privacy-page";
 import { SettingsPage } from "@/features/settings/settings-page";
 import { ExecutionManager, localExecutionProvider, permissionManager, setExecutionManager } from "@/services/execution";
 import { registerLocalToolHandlers } from "@/tools/register-handlers";
@@ -75,19 +77,23 @@ export function App() {
       recent: "Recent",
       settings: "Settings",
       about: "About",
+      privacy: "Privacy",
     };
     const suffix = route.name === "tool" ? (toolRegistry.get(route.toolId)?.meta.name ?? "Tool") : route.name === "category" ? route.category : titles[route.name];
     document.title = `${suffix} · ToolZen`;
   }, [route]);
 
   return (
-    <div className="site-shell">
-      <a className="skip-link" href="#contenido">{translate(locale, "skip")}</a>
-      <SiteHeader />
-      <main id="contenido" key={routeKey(route)}>
-        {status === "error" ? <p className="alert alert-danger">{error}</p> : null}
-        {status === "loading" ? <p className="empty-state">…</p> : <RouteView />}
-      </main>
+    <div className="flex h-full min-h-0 bg-canvas text-ink">
+      <a className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:rounded focus:bg-elevated focus:px-3 focus:py-2" href="#main">{translate(locale, "skip")}</a>
+      <Sidebar />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <TopBar />
+        <main id="main" className="min-h-0 flex-1 overflow-auto px-5 py-4" key={routeKey(route)}>
+          {status === "error" ? <p className="mb-3 text-sm text-danger" role="alert">{error}</p> : null}
+          {status === "loading" ? <p className="empty">{translate(locale, "loading")}</p> : <RouteView />}
+        </main>
+      </div>
       <CommandPalette />
     </div>
   );
@@ -110,6 +116,7 @@ function RouteView() {
       {route.name === "recent" ? <RecentPage /> : null}
       {route.name === "settings" ? <SettingsPage /> : null}
       {route.name === "about" ? <AboutPage /> : null}
+      {route.name === "privacy" ? <PrivacyPage /> : null}
     </div>
   );
 }

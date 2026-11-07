@@ -20,9 +20,10 @@ const PRIMARY: readonly { key: "home" | "allTools" | "favorites" | "recent"; lab
   { key: "recent", label: "Recent", icon: "clock", route: { name: "recent" } },
 ];
 
-const SECONDARY: readonly { label: string; icon: ToolIconName; route: AppRoute }[] = [
-  { label: "Settings", icon: "settings", route: { name: "settings" } },
-  { label: "About", icon: "info", route: { name: "about" } },
+const SECONDARY: readonly { key: "privacy" | "settings" | "about"; icon: ToolIconName; route: AppRoute }[] = [
+  { key: "privacy", icon: "shield", route: { name: "privacy" } },
+  { key: "settings", icon: "settings", route: { name: "settings" } },
+  { key: "about", icon: "info", route: { name: "about" } },
 ];
 
 export function Sidebar() {
@@ -66,7 +67,7 @@ export function Sidebar() {
       </nav>
       <div className="mt-auto flex flex-col gap-0.5 px-2 pb-3">
         {SECONDARY.map((item) => (
-          <NavButton key={item.label} {...item} collapsed={collapsed} current={sameRoute(route, item.route)} onClick={() => void navigate(item.route)} />
+          <NavButton key={item.key} label={translate(locale, item.key)} icon={item.icon} collapsed={collapsed} current={sameRoute(route, item.route)} onClick={() => void navigate(item.route)} />
         ))}
       </div>
     </aside>

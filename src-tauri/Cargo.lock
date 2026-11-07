@@ -4366,6 +4366,7 @@ name = "toolzen-desktop"
 version = "0.1.1"
 dependencies = [
  "lopdf",
+ "png",
  "rfd",
  "rusqlite",
  "serde",

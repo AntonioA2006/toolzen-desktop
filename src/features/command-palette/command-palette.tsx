@@ -39,6 +39,7 @@ export function CommandPalette() {
       { id: "recent", group: "Navigate", label: "Recent", hint: "Opened tools", run: go({ name: "recent" }) },
       { id: "settings", group: "Navigate", label: "Settings", hint: "Preferences", run: go({ name: "settings" }) },
       { id: "about", group: "Navigate", label: "About", hint: "Version and license", run: go({ name: "about" }) },
+      { id: "privacy", group: "Navigate", label: "Privacy", hint: "Local data", run: go({ name: "privacy" }) },
       ...CATEGORIES.map((category) => ({
         id: `category-${category.id}`,
         group: "Categories",

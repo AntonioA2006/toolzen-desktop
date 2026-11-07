@@ -2,10 +2,12 @@
 // Copyright 2026 ToolZen Contributors
 
 import { PageHeader } from "@/components/layout/page-header";
+import { translate } from "@/lib/i18n";
 import { usePreferencesStore } from "@/stores/preferences-store";
 import { toolRegistry } from "@/tools/registry";
 
 export function RecentPage() {
+  const locale = usePreferencesStore((state) => state.preferences.language);
   const recent = usePreferencesStore((state) => state.recent);
   const navigate = usePreferencesStore((state) => state.navigate);
   const seen = new Set<string>();
@@ -16,8 +18,8 @@ export function RecentPage() {
   });
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-5">
-      <PageHeader title="Recent" description="Tools you opened. Input and output are not stored." />
-      {entries.length === 0 ? <p className="text-sm text-subtle">No recent tools. Open a tool and it will appear here. Nothing is recorded until you do.</p> : null}
+      <PageHeader title={translate(locale, "recent")} description={translate(locale, "emptyRecent")} />
+      {entries.length === 0 ? <p className="empty">{translate(locale, "emptyRecent")}</p> : null}
       <ul className="divide-y divide-line rounded-lg border border-line">
         {entries.map((entry) => {
           const tool = toolRegistry.get(entry.toolId);

@@ -2,8 +2,7 @@
 // Copyright 2026 ToolZen Contributors
 
 import { useState } from "react";
-import { ToolFlow } from "@/components/site/tool-flow";
-import { SiteIcon } from "@/components/site/icon";
+import { Button } from "@/components/ui/button";
 import { useToolRunner } from "@/hooks/use-tool-runner";
 import { optionLabel, toolCopy } from "@/lib/catalog-copy";
 import { translate } from "@/lib/i18n";
@@ -17,121 +16,119 @@ import { readinessOf } from "./status";
 
 export function MvpToolPage() {
   const routeTool = useRouteTool();
-  if (!routeTool) return <p className="empty-state">That tool is not in this release.</p>;
+  if (!routeTool) return <p className="empty">That tool is not in this release.</p>;
   return <MvpForm spec={routeTool} />;
 }
 
 function MvpForm({ spec }: { spec: MvpToolSpec }) {
   const runner = useToolRunner(spec.id);
   const locale = usePreferencesStore((state) => state.preferences.language);
-  const navigate = usePreferencesStore((state) => state.navigate);
   const readiness = readinessOf(spec.id);
   const copy = toolCopy(locale, spec.id);
   const [files, setFiles] = useState<File[]>([]);
   const [options, setOptions] = useState<Record<string, string>>({});
+  const [dragging, setDragging] = useState(false);
   const [saveNote, setSaveNote] = useState<string | null>(null);
   const output = runner.output as LocalOutput | null;
-  const tone = spec.category === "conversion" ? "conversion" : spec.category === "image" ? "image" : spec.category === "ocr" ? "ocr" : "pdf";
   const unavailable = readiness === "unavailable";
 
   return (
-    <>
-      <section className="page-hero page-hero-deep" aria-label={copy.short}>
-        <div className="deco" aria-hidden="true">
-          <span className="deco-grid" />
-          <span className="deco-blob deco-blob-1" />
-          <span className="deco-ring deco-ring-1" />
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
+      <header>
+        <p className="type-meta">{readiness === "ready" ? translate(locale, "statusReady") : readiness === "partial" ? translate(locale, "statusPartial") : translate(locale, "statusUnavailable")}</p>
+        <h1 className="type-display mt-1">{copy.short}</h1>
+        <p className="type-meta mt-1">{copy.blurb}</p>
+      </header>
+      <form
+        className="grid gap-3"
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (unavailable) return;
+          setSaveNote(null);
+          void submit(spec, files, options, runner.run);
+        }}
+      >
+        <div
+          className={`drop${dragging ? " is-over" : ""}`}
+          onDragOver={(event) => { event.preventDefault(); setDragging(true); }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={(event) => {
+            event.preventDefault();
+            setDragging(false);
+            if (!unavailable) setFiles([...(event.dataTransfer.files ?? [])]);
+          }}
+        >
+          <p className="type-title">{copy.drop}</p>
+          <p className="type-meta">{copy.formats} · {translate(locale, "upToMb").replace("{mb}", String(Math.round(spec.maxFileBytes / (1024 * 1024))))}</p>
+          <input type="file" accept={spec.accept} multiple={spec.maxFiles > 1} disabled={unavailable || runner.status === "running"} aria-label={translate(locale, "files")} onChange={(event) => setFiles([...(event.target.files ?? [])])} />
         </div>
-        <div className="page-hero-inner">
-          <nav className="crumbs" aria-label={translate(locale, "breadcrumbs")}>
-            <button type="button" onClick={() => void navigate({ name: "home" })}>{translate(locale, "home")}</button>
-            <span aria-hidden="true"> / </span>
-            <span>{copy.short}</span>
-          </nav>
-          <span className="eyebrow eyebrow-on-dark">
-            <SiteIcon name={spec.icon} className="size-4" />
-            {tone === "conversion" ? translate(locale, "catConvert") : tone === "image" ? translate(locale, "catImage") : tone === "ocr" ? translate(locale, "catOcr") : "PDF"}
-          </span>
-          <h1>{copy.short}</h1>
-          <p className="lead">{copy.blurb}</p>
-          <ul className="chip-row">
-            <li className="chip chip-on-dark"><SiteIcon name="no-account" className="size-4" /> {translate(locale, "chipNoAccount")}</li>
-            <li className="chip chip-on-dark"><SiteIcon name="shield" className="size-4" /> {translate(locale, "chipOnDevice")}</li>
-            <li className="chip chip-on-dark"><SiteIcon name="clock" className="size-4" /> {readiness === "partial" ? translate(locale, "statusPartial") : unavailable ? translate(locale, "statusUnavailable") : translate(locale, "statusReady")}</li>
+        {files.length > 0 ? (
+          <ul className="grid gap-1">
+            {files.map((file) => (
+              <li key={`${file.name}-${file.size}`} className="type-meta flex justify-between gap-3">
+                <span className="truncate">{file.name}</span>
+                <span className="mono">{formatSize(file.size)}</span>
+              </li>
+            ))}
           </ul>
+        ) : null}
+        {spec.options.length > 0 ? (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {spec.options.map((field) => (
+              <label key={field.name} className="block">
+                <span className="field-label">{optionLabel(locale, spec.id, field.name, field.label)}</span>
+                <input
+                  className="field-input"
+                  type={field.kind === "integer" ? "number" : field.name === "password" ? "password" : "text"}
+                  required={field.required}
+                  disabled={unavailable}
+                  value={options[field.name] ?? ""}
+                  onChange={(event) => setOptions((current) => ({ ...current, [field.name]: event.target.value }))}
+                />
+              </label>
+            ))}
+          </div>
+        ) : null}
+        {readiness === "partial" ? <p className="type-meta">{translate(locale, "partialSplit")}</p> : null}
+        {unavailable ? <p className="status status-bad" role="status">{translate(locale, "err_not_in_build")}</p> : null}
+        <div className="flex flex-wrap gap-2">
+          <Button type="submit" variant="primary" disabled={unavailable || runner.status === "running" || files.length === 0}>
+            {runner.status === "running" ? translate(locale, "working") : copy.submit}
+          </Button>
+          <Button type="button" onClick={() => { setFiles([]); setOptions({}); setSaveNote(null); }}>{translate(locale, "processAnother")}</Button>
         </div>
-      </section>
-      <div className="site-main">
-        <ToolFlow
-          locale={locale}
-          icon={spec.icon}
-          tone={tone}
-          copy={copy}
-          multiple={spec.maxFiles > 1}
-          maxMb={Math.round(spec.maxFileBytes / (1024 * 1024))}
-          files={files.map((file) => ({ name: file.name, size: file.size }))}
-          accept={spec.accept}
-          unavailable={unavailable}
-          partialNote={readiness === "partial" ? translate(locale, "partialSplit") : null}
-          status={runner.status}
-          error={runner.error ? explainError(locale, runner.error) : null}
-          hasOutput={output !== null}
-          options={spec.options.length > 0 ? (
-            <div className="options-panel">
-              <p className="options-title"><SiteIcon name="sliders" className="size-4" /> {translate(locale, "optionsTitle")}</p>
-              <div className={`field-row cols-${Math.min(spec.options.length, 4)}`}>
-                {spec.options.map((field) => (
-                  <div className="field" key={field.name}>
-                    <label htmlFor={`${spec.id}-${field.name}`}>{optionLabel(locale, spec.id, field.name, field.label)}</label>
-                    <input
-                      className="field-control"
-                      id={`${spec.id}-${field.name}`}
-                      type={field.kind === "integer" ? "number" : field.name === "password" ? "password" : "text"}
-                      required={field.required}
-                      value={options[field.name] ?? ""}
-                      onChange={(event) => setOptions((current) => ({ ...current, [field.name]: event.target.value }))}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : null}
-          limits={[
-            `${copy.formats}.`,
-            translate(locale, "limitFiles").replace("{min}", String(spec.minFiles)).replace("{max}", String(spec.maxFiles)),
-            translate(locale, "limitSize"),
-            translate(locale, "limitLocal"),
-          ]}
-          onFiles={(list) => {
-            setSaveNote(null);
-            setFiles(list ? [...list] : []);
-          }}
-          onSubmit={() => {
-            setSaveNote(null);
-            void submit(spec, files, options, runner.run);
-          }}
-          onSave={() => {
-            if (!output) return;
-            void saveOutput(output.fileName, output.mime, output.bytesBase64).then((result) => {
-              if (!result.saved) {
-                setSaveNote(translate(locale, "saveCancelled"));
-                return;
-              }
-              setSaveNote(isTauriRuntime() ? translate(locale, "saveDone") : translate(locale, "savePreview"));
-            }).catch((error: unknown) => {
-              setSaveNote(error instanceof Error ? error.message : translate(locale, "err_generic"));
-            });
-          }}
-          onReset={() => {
-            setFiles([]);
-            setOptions({});
-            setSaveNote(null);
-          }}
-        />
-        {saveNote ? <p className="field-help" role="status">{saveNote}</p> : null}
-      </div>
-    </>
+      </form>
+      {runner.error ? <p className="status status-bad" role="alert">{explainError(locale, runner.error)}</p> : null}
+      {runner.status === "running" ? <p className="type-meta" role="status">{translate(locale, "processing")}</p> : null}
+      {output ? (
+        <section className="panel grid gap-2 p-3" aria-live="polite">
+          <h2 className="type-title">{copy.ready}</h2>
+          {runner.note ? <p className="type-meta">{runner.note}</p> : null}
+          <p className="type-meta">{output.fileName}</p>
+          <Button
+            type="button"
+            variant="primary"
+            onClick={() => {
+              void saveOutput(output.fileName, output.mime, output.bytesBase64).then((result) => {
+                setSaveNote(result.saved ? (isTauriRuntime() ? translate(locale, "saveDone") : translate(locale, "savePreview")) : translate(locale, "saveCancelled"));
+              }).catch((error: unknown) => {
+                setSaveNote(error instanceof Error ? error.message : translate(locale, "err_generic"));
+              });
+            }}
+          >
+            {translate(locale, "saveAs")}
+          </Button>
+          {saveNote ? <p className="type-meta" role="status">{saveNote}</p> : null}
+        </section>
+      ) : null}
+    </div>
   );
+}
+
+function formatSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 function explainError(locale: "en" | "es", message: string): string {
@@ -154,8 +151,7 @@ async function submit(spec: MvpToolSpec, files: File[], options: Record<string, 
   }
   const encoded: LocalFile[] = [];
   for (const file of files) {
-    const bytes = new Uint8Array(await file.arrayBuffer());
-    encoded.push({ name: file.name, type: file.type, bytesBase64: bytesToBase64(bytes) });
+    encoded.push({ name: file.name, type: file.type, bytesBase64: bytesToBase64(new Uint8Array(await file.arrayBuffer())) });
   }
   await run({ files: encoded, options: parsed });
 }
