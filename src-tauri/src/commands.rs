@@ -4,6 +4,7 @@
 use tauri::State;
 
 use crate::db::{PersistedState, PersistenceOp, StorageInfo};
+use crate::engines::{self, EngineJob, EngineOutput};
 use crate::AppState;
 
 fn with_db<T>(state: &AppState, body: impl FnOnce(&crate::db::Database) -> Result<T, crate::error::AppError>) -> Result<T, String> {
@@ -24,4 +25,9 @@ pub fn apply_op(state: State<'_, AppState>, operation: PersistenceOp) -> Result<
 #[tauri::command]
 pub fn storage_info(state: State<'_, AppState>) -> Result<StorageInfo, String> {
     with_db(&state, |database| database.info())
+}
+
+#[tauri::command]
+pub fn run_engine(job: EngineJob) -> Result<EngineOutput, String> {
+    engines::run_engine(job)
 }

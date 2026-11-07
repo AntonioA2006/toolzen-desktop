@@ -82,7 +82,7 @@ export interface PersistencePort {
 }
 
 export const DEFAULT_PREFERENCES: UserPreferences = {
-  theme: "dark",
+  theme: "light",
   language: "en",
   startupPage: "home",
   executionMode: "local",

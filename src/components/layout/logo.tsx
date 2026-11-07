@@ -1,12 +1,28 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 ToolZen Contributors
 
+/** Brand mark geometry matches the ToolZen document-Z used on the reference site. */
 export function LogoMark({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
-      <rect x="2" y="2" width="20" height="20" rx="6" fill="currentColor" opacity="0.14" />
-      <path d="M7 15.5V8.5h10" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-      <circle cx="16.5" cy="15.5" r="1.35" fill="currentColor" />
+      <path
+        d="M6 4.5h12l-8.6 8.4H18l-3.4 6.6"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="6.6" cy="18.4" r="1.7" fill="currentColor" />
     </svg>
+  );
+}
+
+export function Wordmark() {
+  return (
+    <span className="text-sm tracking-tight text-white">
+      <b className="font-bold">Tool</b>
+      <i className="font-medium text-[var(--tz-cyan-400)]">Zen</i>
+    </span>
   );
 }

@@ -1,15 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 ToolZen Contributors
 
-export const CATEGORY_IDS = [
-  "pdf",
-  "images",
-  "text",
-  "developer-tools",
-  "file-utilities",
-  "converters",
-  "productivity",
-] as const;
+export const CATEGORY_IDS = ["pdf", "conversion", "image", "ocr", "developer-tools", "converters", "text", "images", "file-utilities", "productivity"] as const;
 
 export type CategoryId = (typeof CATEGORY_IDS)[number];
 
@@ -21,31 +13,42 @@ export interface CategoryDefinition {
 }
 
 export type ToolIconName =
-  | "braces"
-  | "fingerprint"
-  | "binary"
-  | "file-text"
+  | "layers"
+  | "split"
+  | "archive"
+  | "file-input"
   | "image"
-  | "type"
-  | "code"
-  | "folder"
-  | "repeat"
-  | "timer"
+  | "scan-text"
+  | "rotate-cw"
+  | "file-minus"
+  | "file-plus"
+  | "crop"
+  | "stamp"
+  | "lock"
+  | "unlock"
+  | "scaling"
+  | "eraser"
+  | "file-output"
   | "home"
   | "star"
   | "clock"
   | "settings"
   | "info"
-  | "search";
+  | "search"
+  | "braces"
+  | "fingerprint"
+  | "binary"
+  | "file-text"
+  | "type"
+  | "folder"
+  | "repeat"
+  | "timer";
 
 export const CATEGORIES: readonly CategoryDefinition[] = [
-  { id: "pdf", name: "PDF", description: "Document tools planned for a later release.", icon: "file-text" },
-  { id: "images", name: "Images", description: "Image tools planned for a later release.", icon: "image" },
-  { id: "text", name: "Text", description: "Text tools planned for a later release.", icon: "type" },
-  { id: "developer-tools", name: "Developer Tools", description: "Format, generate, and inspect local developer data.", icon: "code" },
-  { id: "file-utilities", name: "File Utilities", description: "File tools planned for a later release.", icon: "folder" },
-  { id: "converters", name: "Converters", description: "Convert data locally.", icon: "repeat" },
-  { id: "productivity", name: "Productivity", description: "Productivity tools planned for a later release.", icon: "timer" },
+  { id: "pdf", name: "PDF", description: "Merge, split, compress, rotate, crop, watermark, protect, and unlock documents.", icon: "layers" },
+  { id: "conversion", name: "Convert", description: "Word to PDF, PDF to Word, and images to PDF.", icon: "file-input" },
+  { id: "image", name: "Image", description: "Compress, resize, crop, convert to WebP, and strip metadata.", icon: "image" },
+  { id: "ocr", name: "OCR", description: "Extract text from an image into a .txt file.", icon: "scan-text" },
 ];
 
 export function categoryById(id: CategoryId): CategoryDefinition {

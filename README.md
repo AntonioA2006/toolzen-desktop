@@ -16,8 +16,7 @@ Screenshots of the running desktop UI are captured during verification and attac
 - Desktop shell with a collapsible sidebar, global search, and a command palette (`Ctrl+K` on Windows and Linux, `Cmd+K` on macOS).
 - Dark theme by default, plus light and system themes. The choice is stored locally.
 - Tool explorer, favorites, and recent activity. History stores tool ids and timestamps only, never input or output text.
-- Three local tools: JSON Formatter, UUID Generator, and Base64 encoder/decoder.
-- Planned tools are listed as unavailable and cannot be executed.
+- The same twenty tools as the ToolZen reference catalogue: PDF, image, conversion, and OCR. See [docs/PARITY.md](docs/PARITY.md) for what actually runs.
 - SQLite persistence in the desktop app, with versioned migrations. The browser preview uses a separate localStorage adapter and says so.
 - A local execution manager, a cloud provider contract with no implementation, a permission manager, and workflow and AI planning foundations. There is no workflow editor and no assistant.
 

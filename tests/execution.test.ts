@@ -9,8 +9,8 @@ import { registerNativeLocalHandler } from "@/services/execution/native-adapter"
 import type { ExecutionCapabilities, ExecutionOutcome, ExecutionRequest } from "@/services/execution/types";
 import { PermissionManager } from "@/services/permissions/manager";
 import { localTextCapabilities, type AnyToolDefinition, type ToolRegistry } from "@/tools/types";
-import { registerLocalToolHandlers } from "@/tools/register-handlers";
-import { toolRegistry } from "@/tools/registry";
+import { formatJson, type JsonFormatterInput } from "@/tools/json-formatter/process";
+import { jsonFormatterTool } from "@/tools/json-formatter/definition";
 
 class SpyCloud extends CloudExecutionProvider {
   readonly id = "spy-cloud";
@@ -185,8 +185,8 @@ describe("execution manager", () => {
 
   it("runs the real JSON formatter through the registered local handler", async () => {
     const local = new LocalExecutionProvider();
-    registerLocalToolHandlers(local);
-    const manager = new ExecutionManager(toolRegistry, local, new PermissionManager(), null);
+    local.register("json-formatter", (input) => formatJson(input as JsonFormatterInput));
+    const manager = new ExecutionManager({ list: () => [{ ...jsonFormatterTool, Component: () => null }], get: () => ({ ...jsonFormatterTool, Component: () => null }) }, local, new PermissionManager(), null);
     const outcome = await manager.execute(request("json-formatter", "local", { source: '{"z":true}', indent: 2 }));
     expect(outcome.ok).toBe(true);
     if (outcome.ok) {

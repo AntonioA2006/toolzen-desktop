@@ -88,6 +88,15 @@ export class PermissionManager {
   }
 
   private implicitAllow(request: PermissionRequest): string | null {
+    if (
+      request.kind === "filesystem.read" &&
+      request.scope.type === "filesystem" &&
+      request.scope.operations.length === 1 &&
+      request.scope.operations[0] === "read" &&
+      request.scope.path.startsWith("selection:")
+    ) {
+      return "Allowed. You chose this file and started the tool. Only that selected name is in scope.";
+    }
     if (request.sensitivity !== "harmless") return null;
     if (!HARMLESS_IMPLICIT.has(request.kind)) return null;
     if (request.kind === "tool.execute" && request.scope.type === "tool-input") {

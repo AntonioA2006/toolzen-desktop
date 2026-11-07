@@ -3,6 +3,7 @@
 
 mod commands;
 pub mod db;
+pub mod engines;
 pub mod error;
 pub mod execution;
 
@@ -27,7 +28,7 @@ pub fn run() {
             app.manage(AppState { database: Mutex::new(database) });
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![commands::load_state, commands::apply_op, commands::storage_info])
+        .invoke_handler(tauri::generate_handler![commands::load_state, commands::apply_op, commands::storage_info, commands::run_engine])
         .run(tauri::generate_context!())
         .expect("ToolZen failed to start");
 }
