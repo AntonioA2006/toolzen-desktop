@@ -5,7 +5,8 @@ import { useState } from "react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { Label, Select } from "@/components/ui/field";
-import { IMPLEMENTED_LOCALES } from "@/lib/i18n";
+import { translate } from "@/lib/i18n";
+import { shortcutLabel } from "@/lib/platform";
 import { usePreferencesStore } from "@/stores/preferences-store";
 
 export function SettingsPage() {
@@ -16,6 +17,7 @@ export function SettingsPage() {
   const clearFavorites = usePreferencesStore((state) => state.clearFavorites);
   const resetPreferences = usePreferencesStore((state) => state.resetPreferences);
   const resetAll = usePreferencesStore((state) => state.resetAll);
+  const locale = preferences.language;
   const [message, setMessage] = useState<string | null>(null);
   const [confirmReset, setConfirmReset] = useState(false);
 
@@ -24,87 +26,86 @@ export function SettingsPage() {
       await action();
       setMessage(success);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "The change failed.");
+      setMessage(error instanceof Error ? error.message : translate(locale, "changeFailed"));
     }
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
-      <PageHeader title="Settings" description="Preferences are stored locally. Browser preview uses localStorage and says so. The desktop app uses SQLite." />
-      <section className="grid gap-4">
-        <h2 className="text-sm font-semibold">Appearance</h2>
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
+      <PageHeader title={translate(locale, "settings")} description={translate(locale, "settingsLead")} />
+      <section className="grid gap-3">
+        <h2 className="type-title">{translate(locale, "appearance")}</h2>
         <div>
-          <Label htmlFor="theme">Theme</Label>
+          <Label htmlFor="theme">{translate(locale, "theme")}</Label>
           <Select id="theme" value={preferences.theme} onChange={(event) => void update({ theme: event.target.value as typeof preferences.theme })}>
-            <option value="dark">Dark</option>
-            <option value="light">Light</option>
-            <option value="system">System</option>
+            <option value="dark">{translate(locale, "dark")}</option>
+            <option value="light">{translate(locale, "light")}</option>
+            <option value="system">{translate(locale, "system")}</option>
           </Select>
         </div>
         <div>
-          <Label htmlFor="language">Language</Label>
+          <Label htmlFor="language">{translate(locale, "language")}</Label>
           <Select id="language" value={preferences.language} onChange={(event) => void update({ language: event.target.value === "es" ? "es" : "en" })}>
             <option value="en">English</option>
             <option value="es">Español</option>
           </Select>
-          <p className="mt-1 text-xs text-faint">{IMPLEMENTED_LOCALES.join(", ")}</p>
         </div>
       </section>
-      <section className="grid gap-4">
-        <h2 className="text-sm font-semibold">Startup</h2>
+      <section className="grid gap-3">
+        <h2 className="type-title">{translate(locale, "startup")}</h2>
         <div>
-          <Label htmlFor="startup">Open to</Label>
+          <Label htmlFor="startup">{translate(locale, "openTo")}</Label>
           <Select id="startup" value={preferences.startupPage} onChange={(event) => void update({ startupPage: event.target.value as typeof preferences.startupPage })}>
-            <option value="home">Home</option>
-            <option value="tools">All tools</option>
-            <option value="last-tool">Last opened page</option>
+            <option value="home">{translate(locale, "openHome")}</option>
+            <option value="tools">{translate(locale, "openTools")}</option>
+            <option value="last-tool">{translate(locale, "openLast")}</option>
           </Select>
         </div>
         <div>
-          <Label htmlFor="autostart">Launch at login</Label>
+          <Label htmlFor="autostart">{translate(locale, "launchAtLogin")}</Label>
           <Select id="autostart" value="unavailable" disabled>
-            <option value="unavailable">Not implemented</option>
+            <option value="unavailable">{translate(locale, "notImplemented")}</option>
           </Select>
-          <p className="mt-1 text-xs text-faint">ToolZen does not register an operating-system autostart entry.</p>
+          <p className="type-meta mt-1">{translate(locale, "autostartNote")}</p>
         </div>
-      </section>
-      <section className="grid gap-3">
-        <h2 className="text-sm font-semibold">Execution</h2>
-        <fieldset className="grid gap-2">
-          <legend className="text-xs font-medium text-subtle">Preferred mode</legend>
-          <label className="flex items-start gap-2 text-sm"><input type="radio" name="mode" checked={preferences.executionMode === "local"} onChange={() => void update({ executionMode: "local" })} /> Local. Runs on this device.</label>
-          <label className="flex items-start gap-2 text-sm text-faint"><input type="radio" name="mode" disabled /> Cloud. Unavailable. No provider is registered, and selecting it is disabled.</label>
-          <label className="flex items-start gap-2 text-sm"><input type="radio" name="mode" checked={preferences.executionMode === "auto"} onChange={() => void update({ executionMode: "auto" })} /> Automatic. Uses local execution until a cloud provider exists. It does not send work remotely.</label>
-        </fieldset>
-      </section>
-      <section className="grid gap-3">
-        <h2 className="text-sm font-semibold">Foundations not in the interface</h2>
-        <p className="text-sm text-subtle">Workflow definitions and an AI planning contract exist in the codebase. There is no workflow editor and no assistant. Turning on AI retention does not start a model, a chat, or a network client.</p>
-        <label className="flex items-start gap-2 text-sm">
-          <input type="checkbox" checked={preferences.aiRetentionOptIn} onChange={(event) => void update({ aiRetentionOptIn: event.target.checked })} />
-          <span>Allow future AI conversation storage on this device. Default is off. No messages are created by this control.</span>
-        </label>
-      </section>
-      <section className="grid gap-3">
-        <h2 className="text-sm font-semibold">Local data</h2>
-        <p className="text-sm text-subtle">{info?.note ?? "Storage information is not available yet."}</p>
-        {info?.path ? <p className="font-mono text-xs text-faint">{info.path}</p> : null}
-        <p className="text-xs text-faint">Backend: {info?.backend ?? "unknown"}. Schema {info?.schemaVersion ?? "-"}. Favorites {info?.favoriteCount ?? 0}. Recent rows {info?.recentCount ?? 0}. Workflows {info?.workflowCount ?? 0}.</p>
-        <div className="flex flex-wrap gap-2">
-          <Button onClick={() => void run(clearHistory, "History cleared.")}>Clear history</Button>
-          <Button onClick={() => void run(clearFavorites, "Favorites cleared.")}>Clear favorites</Button>
-          <Button onClick={() => void run(resetPreferences, "Preferences reset.")}>Reset preferences</Button>
-          {confirmReset ? (
-            <Button variant="danger" onClick={() => void run(async () => { await resetAll(); setConfirmReset(false); }, "Local metadata reset.")}>Confirm reset of local metadata</Button>
-          ) : (
-            <Button variant="danger" onClick={() => setConfirmReset(true)}>Reset all local metadata</Button>
-          )}
-        </div>
-        {message ? <p className="text-sm text-subtle">{message}</p> : null}
       </section>
       <section className="grid gap-2">
-        <h2 className="text-sm font-semibold">Privacy</h2>
-        <p className="text-sm text-subtle">ToolZen does not upload tool inputs, file contents, or history payloads. History stores tool ids and timestamps only. See the privacy document in the repository for the permission split between the app and Tauri.</p>
+        <h2 className="type-title">{translate(locale, "shortcuts")}</h2>
+        <p className="type-body">{translate(locale, "shortcutPalette")} <span className="mono">{shortcutLabel()}</span></p>
+      </section>
+      <section className="grid gap-2">
+        <h2 className="type-title">{translate(locale, "execution")}</h2>
+        <fieldset className="grid gap-2">
+          <legend className="type-label text-subtle">{translate(locale, "execution")}</legend>
+          <label className="flex items-start gap-2 text-sm"><input type="radio" name="mode" checked={preferences.executionMode === "local"} onChange={() => void update({ executionMode: "local" })} /> {translate(locale, "localMode")}</label>
+          <label className="flex items-start gap-2 text-sm text-faint"><input type="radio" name="mode" disabled /> {translate(locale, "cloudMode")}</label>
+          <label className="flex items-start gap-2 text-sm"><input type="radio" name="mode" checked={preferences.executionMode === "auto"} onChange={() => void update({ executionMode: "auto" })} /> {translate(locale, "autoMode")}</label>
+        </fieldset>
+      </section>
+      <section className="grid gap-2">
+        <h2 className="type-title">{translate(locale, "foundations")}</h2>
+        <p className="text-sm text-subtle">{translate(locale, "foundationsBody")}</p>
+        <label className="flex items-start gap-2 text-sm">
+          <input type="checkbox" checked={preferences.aiRetentionOptIn} onChange={(event) => void update({ aiRetentionOptIn: event.target.checked })} />
+          <span>{translate(locale, "aiRetention")}</span>
+        </label>
+      </section>
+      <section className="grid gap-2">
+        <h2 className="type-title">{translate(locale, "storage")}</h2>
+        <p className="text-sm text-subtle">{info?.note ?? translate(locale, "loading")}</p>
+        {info?.path ? <p className="mono text-xs">{info.path}</p> : null}
+        <p className="type-meta">Backend: {info?.backend ?? ""}. Schema {info?.schemaVersion ?? "-"}. Favorites {info?.favoriteCount ?? 0}. Recent {info?.recentCount ?? 0}.</p>
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={() => void run(clearHistory, translate(locale, "historyCleared"))}>{translate(locale, "clearHistory")}</Button>
+          <Button onClick={() => void run(clearFavorites, translate(locale, "favoritesCleared"))}>{translate(locale, "clearFavorites")}</Button>
+          <Button onClick={() => void run(resetPreferences, translate(locale, "preferencesReset"))}>{translate(locale, "resetPreferences")}</Button>
+          {confirmReset ? (
+            <Button variant="danger" onClick={() => void run(async () => { await resetAll(); setConfirmReset(false); }, translate(locale, "metadataReset"))}>{translate(locale, "confirmReset")}</Button>
+          ) : (
+            <Button variant="danger" onClick={() => setConfirmReset(true)}>{translate(locale, "resetAll")}</Button>
+          )}
+        </div>
+        {message ? <p className="text-sm" role="status">{message}</p> : null}
       </section>
     </div>
   );

@@ -120,7 +120,9 @@ body {
 
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
 .row-btn { display: flex; width: 100%; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 6px; text-align: left; }
+.row-btn { transition: background-color 150ms ease; }
 .row-btn:hover { background: var(--hover); }
+.drop { transition: border-color 150ms ease, background-color 150ms ease; }
 .row-btn[aria-current="page"] { background: var(--accent-soft); color: var(--ink); }
 
 .drop {

@@ -20,4 +20,4 @@ Scores below are a review of the implemented screens in this branch, not a certi
 | Icon | 6 | Separate runtime asset exists. Bundle icons unchanged. OS behavior not verified. |
 | Overall | 7 | Below a 9. Remaining gaps are listed in the redesign notes. |
 
-Automated commands for this branch are recorded in the pull request after they run. A missing ESLint config is still a missing lint, not a pass.
+Commands on this branch: `tsc --noEmit` passed, Vitest 41 passed, `vite build` passed on the previous commit of this branch, `cargo test --lib` 14 passed, `cargo clippy --lib -D warnings` passed. ESLint is not configured. Browser screenshots cover dashboard, explorer, a tool, privacy, and settings in light and dark. They are not a Windows, macOS, or Linux native run.
