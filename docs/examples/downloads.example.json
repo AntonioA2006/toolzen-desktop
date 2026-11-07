@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "example": true,
+  "notPublished": true,
+  "repository": "AntonioA2006/toolzen-desktop",
+  "publicAnonymousDownload": false,
+  "note": "Example shape only. These rows are not releases, have no files, and must not be linked as downloads.",
+  "releases": [
+    {
+      "version": "0.0.0-example",
+      "channel": "prerelease",
+      "withdrawn": false,
+      "commit": "0000000000000000000000000000000000000000",
+      "publishedAt": null,
+      "notes": "Example prerelease. Not published.",
+      "signing": { "windows": "unsigned", "macos": "unsigned" },
+      "assets": []
+    },
+    {
+      "version": "0.0.0",
+      "channel": "stable",
+      "withdrawn": true,
+      "commit": "0000000000000000000000000000000000000000",
+      "publishedAt": null,
+      "notes": "Example of a withdrawn row. Assets stay empty so nothing can be downloaded.",
+      "signing": { "windows": "unsigned", "macos": "unsigned" },
+      "assets": []
+    }
+  ]
+}

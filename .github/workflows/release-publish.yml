@@ -1,0 +1,29 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 ToolZen Contributors
+
+name: Release publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: Unused. This workflow cannot publish.
+        required: true
+        type: string
+
+jobs:
+  publish:
+    if: vars.RELEASE_PUBLISH_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - name: Publishing stays disabled in this file
+        run: |
+          echo "RELEASE_PUBLISH_ENABLED is set, but this workflow still has no release upload."
+          echo "The environment name 'release' is not protection. Required reviewers exist only after someone configures them in GitHub settings."
+          echo "Refusing to create a tag, draft, or release."
+          exit 1
+
+# Pushing a branch or a tag does not run this workflow.
+# vars.RELEASE_PUBLISH_ENABLED is unset unless a maintainer creates it, so the job is skipped.
+# Even when that variable is true, the only step exits 1 and does not call the Releases API.
