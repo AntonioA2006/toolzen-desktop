@@ -25,10 +25,17 @@ pub fn run() {
             let dir = app.path().app_data_dir()?;
             fs::create_dir_all(&dir)?;
             let database = Database::open(&dir.join("toolzen.sqlite"))?;
-            app.manage(AppState { database: Mutex::new(database) });
+            app.manage(AppState {
+                database: Mutex::new(database),
+            });
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![commands::load_state, commands::apply_op, commands::storage_info, commands::run_engine])
+        .invoke_handler(tauri::generate_handler![
+            commands::load_state,
+            commands::apply_op,
+            commands::storage_info,
+            commands::run_engine
+        ])
         .run(tauri::generate_context!())
         .expect("ToolZen failed to start");
 }

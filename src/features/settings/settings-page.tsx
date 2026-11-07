@@ -43,12 +43,11 @@ export function SettingsPage() {
         </div>
         <div>
           <Label htmlFor="language">Language</Label>
-          <Select id="language" value={preferences.language} onChange={() => undefined}>
-            {IMPLEMENTED_LOCALES.map((locale) => (
-              <option key={locale} value={locale}>English</option>
-            ))}
+          <Select id="language" value={preferences.language} onChange={(event) => void update({ language: event.target.value === "es" ? "es" : "en" })}>
+            <option value="en">English</option>
+            <option value="es">Español</option>
           </Select>
-          <p className="mt-1 text-xs text-faint">No other languages are shipped. The selector only lists catalogs that exist.</p>
+          <p className="mt-1 text-xs text-faint">{IMPLEMENTED_LOCALES.join(", ")}</p>
         </div>
       </section>
       <section className="grid gap-4">

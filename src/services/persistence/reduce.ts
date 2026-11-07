@@ -120,13 +120,13 @@ export function migratePersisted(raw: unknown): PersistedState {
 }
 
 export function sanitizePreferences(input: Partial<UserPreferences>): UserPreferences {
-  const theme = input.theme === "light" || input.theme === "system" ? input.theme : "dark";
+  const theme = input.theme === "dark" || input.theme === "system" ? input.theme : "light";
   const startupPage = input.startupPage === "tools" || input.startupPage === "last-tool" ? input.startupPage : "home";
   const executionMode = input.executionMode === "auto" ? "auto" : "local";
   const days = input.aiRetentionDays;
   return {
     theme,
-    language: "en",
+    language: input.language === "es" ? "es" : "en",
     startupPage,
     executionMode,
     lastRoute: parseRoute(input.lastRoute),

@@ -16,7 +16,8 @@ Screenshots of the running desktop UI are captured during verification and attac
 - Desktop shell with a collapsible sidebar, global search, and a command palette (`Ctrl+K` on Windows and Linux, `Cmd+K` on macOS).
 - Dark theme by default, plus light and system themes. The choice is stored locally.
 - Tool explorer, favorites, and recent activity. History stores tool ids and timestamps only, never input or output text.
-- The same twenty tools as the ToolZen reference catalogue: PDF, image, conversion, and OCR. See [docs/PARITY.md](docs/PARITY.md) for what actually runs.
+- Ten tools run without installing qpdf, Ghostscript, Poppler, LibreOffice, or Tesseract: merge, extract, delete, and rotate PDF, plus compress, resize, crop, WebP, metadata removal, and JPG to PDF. The other catalogue entries stay visible and do not pretend to run. See [docs/AUDIT-REPORT.md](docs/AUDIT-REPORT.md) and [docs/PARITY.md](docs/PARITY.md).
+- A Windows NSIS per-user installer is configured and not yet built or tested on a clean Windows machine. See [docs/DISTRIBUTION.md](docs/DISTRIBUTION.md).
 - SQLite persistence in the desktop app, with versioned migrations. The browser preview uses a separate localStorage adapter and says so.
 - A local execution manager, a cloud provider contract with no implementation, a permission manager, and workflow and AI planning foundations. There is no workflow editor and no assistant.
 

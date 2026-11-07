@@ -8,15 +8,16 @@ import { cn } from "@/lib/cn";
 import { usePreferencesStore } from "@/stores/preferences-store";
 import { useSessionStore } from "@/stores/session-store";
 import { useUiStore } from "@/stores/ui-store";
+import { translate } from "@/lib/i18n";
 import { CATEGORIES, type ToolIconName } from "@/tools/categories";
 import { ToolIcon } from "@/tools/icons";
 import type { AppRoute } from "@/types/route";
 
-const PRIMARY: readonly { label: string; icon: ToolIconName; route: AppRoute }[] = [
-  { label: "Home", icon: "home", route: { name: "home" } },
-  { label: "All Tools", icon: "search", route: { name: "tools" } },
-  { label: "Favorites", icon: "star", route: { name: "favorites" } },
-  { label: "Recent", icon: "clock", route: { name: "recent" } },
+const PRIMARY: readonly { key: "home" | "allTools" | "favorites" | "recent"; label: string; icon: ToolIconName; route: AppRoute }[] = [
+  { key: "home", label: "Home", icon: "home", route: { name: "home" } },
+  { key: "allTools", label: "All Tools", icon: "search", route: { name: "tools" } },
+  { key: "favorites", label: "Favorites", icon: "star", route: { name: "favorites" } },
+  { key: "recent", label: "Recent", icon: "clock", route: { name: "recent" } },
 ];
 
 const SECONDARY: readonly { label: string; icon: ToolIconName; route: AppRoute }[] = [
@@ -29,6 +30,7 @@ export function Sidebar() {
   const toggle = useUiStore((state) => state.toggleSidebar);
   const route = useSessionStore((state) => state.route);
   const navigate = usePreferencesStore((state) => state.navigate);
+  const locale = usePreferencesStore((state) => state.preferences.language);
 
   return (
     <aside className={cn("flex h-full shrink-0 flex-col border-r border-white/10 bg-sidebar text-white", collapsed ? "w-16" : "w-60")}>
@@ -43,10 +45,10 @@ export function Sidebar() {
       </div>
       <nav aria-label="Primary" className="flex flex-col gap-0.5 px-2">
         {PRIMARY.map((item) => (
-          <NavButton key={item.label} {...item} collapsed={collapsed} current={sameRoute(route, item.route)} onClick={() => void navigate(item.route)} />
+          <NavButton key={item.key} label={translate(locale, item.key)} icon={item.icon} collapsed={collapsed} current={sameRoute(route, item.route)} onClick={() => void navigate(item.route)} />
         ))}
       </nav>
-      <div className="mt-4 px-3 text-[11px] font-medium tracking-wide text-white/50 uppercase">{collapsed ? "" : "Categories"}</div>
+      <div className="mt-4 px-3 text-[11px] font-medium tracking-wide text-white/50 uppercase">{collapsed ? "" : translate(locale, "categories")}</div>
       <nav aria-label="Categories" className="mt-1 flex flex-col gap-0.5 px-2">
         {CATEGORIES.map((category) => {
           const target: AppRoute = { name: "category", category: category.id };

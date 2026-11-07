@@ -12,7 +12,7 @@ export type PreferredExecutionMode = "local" | "auto";
 
 export interface UserPreferences {
   theme: ThemePreference;
-  language: "en";
+  language: "en" | "es";
   startupPage: StartupPage;
   executionMode: PreferredExecutionMode;
   lastRoute: AppRoute | null;

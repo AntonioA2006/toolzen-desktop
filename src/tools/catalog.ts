@@ -5,6 +5,7 @@ import type { PermissionRequest } from "@/services/permissions/types";
 import type { SchemaResult } from "@/services/schema/field-schema";
 import { localTextCapabilities, type ToolProfile } from "./types";
 import { MVP_TOOLS, type MvpToolSpec } from "./mvp/specs";
+import { readinessOf } from "./mvp/status";
 
 const profiles: readonly ToolProfile[] = MVP_TOOLS.map(toProfile);
 
@@ -23,7 +24,10 @@ function toProfile(spec: MvpToolSpec): ToolProfile {
       category: spec.category,
       icon: spec.icon,
       tags: [spec.category, spec.engine],
-      availability: "available",
+      availability: readinessOf(spec.id) === "unavailable" ? "unavailable" : "available",
+      ...(readinessOf(spec.id) === "unavailable"
+        ? { unavailableReason: "This build does not run this tool. Nothing is processed if you open it." }
+        : {}),
       processingMode: "local",
       formats: { input: spec.accept.split(","), output: [spec.outputMime] },
     },

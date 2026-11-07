@@ -6,7 +6,10 @@ import { ToolWorkspace } from "@/components/tools/tool-workspace";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/field";
 import { useToolRunner } from "@/hooks/use-tool-runner";
+import { translate } from "@/lib/i18n";
+import { usePreferencesStore } from "@/stores/preferences-store";
 import { useSessionStore } from "@/stores/session-store";
+import { readinessOf } from "./status";
 import { findProfile } from "@/tools/catalog";
 import { bytesToBase64, type LocalFile, type LocalOutput } from "./images";
 import { mvpTool, type MvpToolSpec } from "./specs";
@@ -20,6 +23,8 @@ export function MvpToolPage() {
 function MvpForm({ spec }: { spec: MvpToolSpec }) {
   const profile = findProfile(spec.id);
   const runner = useToolRunner(spec.id);
+  const locale = usePreferencesStore((state) => state.preferences.language);
+  const readiness = readinessOf(spec.id);
   const [files, setFiles] = useState<File[]>([]);
   const [options, setOptions] = useState<Record<string, string>>({});
   const output = runner.output as LocalOutput | null;
@@ -36,7 +41,7 @@ function MvpForm({ spec }: { spec: MvpToolSpec }) {
         }}
       >
         <div>
-          <Label htmlFor={`${spec.id}-files`}>Files</Label>
+          <Label htmlFor={`${spec.id}-files`}>{translate(locale, "files")}</Label>
           <Input
             id={`${spec.id}-files`}
             type="file"
@@ -60,24 +65,36 @@ function MvpForm({ spec }: { spec: MvpToolSpec }) {
             />
           </div>
         ))}
-        <Button type="submit" variant="primary" disabled={runner.status === "running"}>
-          {runner.status === "running" ? "Working" : "Run locally"}
+        <Button type="submit" variant="primary" disabled={runner.status === "running" || readiness === "unavailable"}>
+          {runner.status === "running" ? translate(locale, "working") : translate(locale, "run")}
         </Button>
+        {readiness !== "ready" ? <p className="text-sm text-subtle">{translate(locale, readiness === "partial" ? "statusPartial" : "statusUnavailable")}. {profile?.meta.unavailableReason}</p> : null}
       </form>
-      {runner.error ? <p className="text-sm text-danger">{runner.error}</p> : null}
-      {output ? <Download output={output} /> : <p className="text-sm text-subtle">No file yet. A result appears only after the engine finishes.</p>}
+      {runner.error ? <p className="text-sm text-danger">{explainError(locale, runner.error)}</p> : null}
+      {output ? <Download output={output} locale={locale} /> : <p className="text-sm text-subtle">{translate(locale, "noResult")}</p>}
       {runner.note ? <p className="text-xs text-faint">{runner.note}</p> : null}
     </ToolWorkspace>
   );
 }
 
-function Download({ output }: { output: LocalOutput }) {
+function Download({ output, locale }: { output: LocalOutput; locale: "en" | "es" }) {
   const href = `data:${output.mime};base64,${output.bytesBase64}`;
   return (
     <a className="text-sm font-medium text-[var(--tz-blue-600)] underline" href={href} download={output.fileName}>
-      Download {output.fileName}
+      {translate(locale, "download")} {output.fileName}
     </a>
   );
+}
+
+function explainError(locale: "en" | "es", message: string): string {
+  if (message.includes("not_in_this_build") || message.includes("not wired") || message.includes("not_in_build")) return translate(locale, "err_not_in_build");
+  if (message === "pages" || message.includes("Page range") || message.includes("page")) return translate(locale, "err_pages");
+  if (message.includes("preview did not") || message.includes("not installed")) return translate(locale, "err_preview");
+  if (message.includes("not a PDF") || message === "not_pdf") return translate(locale, "err_not_pdf");
+  if (message === "delete_all") return translate(locale, "err_delete_all");
+  if (message === "pdf_unreadable") return translate(locale, "err_pdf_unreadable");
+  if (message === "file_count" || message.includes("file count")) return translate(locale, "err_file_count");
+  return message || translate(locale, "err_generic");
 }
 
 async function submit(spec: MvpToolSpec, files: File[], options: Record<string, string>, run: (input: unknown) => Promise<void>) {

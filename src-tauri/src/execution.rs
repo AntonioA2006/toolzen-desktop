@@ -35,12 +35,20 @@ pub struct NativeExecutionError {
     pub message: String,
 }
 
-pub fn prepare_native_request(request: NativeExecutionRequest) -> Result<PreparedLocalRequest, NativeExecutionError> {
+pub fn prepare_native_request(
+    request: NativeExecutionRequest,
+) -> Result<PreparedLocalRequest, NativeExecutionError> {
     if !crate::db::valid_identifier(&request.tool_id) {
-        return Err(error("invalid_tool", "The tool id is not valid. Nothing was executed."));
+        return Err(error(
+            "invalid_tool",
+            "The tool id is not valid. Nothing was executed.",
+        ));
     }
     if request.payload_json.len() > 1_000_000 {
-        return Err(error("input_too_large", "The payload is too large. Nothing was executed."));
+        return Err(error(
+            "input_too_large",
+            "The payload is too large. Nothing was executed.",
+        ));
     }
     match request.mode {
         ExecutionMode::Cloud => Err(error(
@@ -55,7 +63,10 @@ pub fn prepare_native_request(request: NativeExecutionRequest) -> Result<Prepare
 }
 
 fn error(code: &str, message: &str) -> NativeExecutionError {
-    NativeExecutionError { code: code.to_string(), message: message.to_string() }
+    NativeExecutionError {
+        code: code.to_string(),
+        message: message.to_string(),
+    }
 }
 
 #[cfg(test)]
