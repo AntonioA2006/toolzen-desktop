@@ -8,7 +8,7 @@ on:
   pull_request:
 
 jobs:
-  frontend:
+  checks:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,16 +16,59 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Install Tauri Linux dependencies
+        run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev patchelf libssl-dev libxdo-dev build-essential pkg-config
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      - run: cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
+      - run: cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
+      - run: cargo test --manifest-path src-tauri/Cargo.toml
 
-  rust:
-    runs-on: ubuntu-latest
+  package:
+    needs: checks
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: linux
+          - os: windows-latest
+            target: windows
+          - os: macos-latest
+            target: macos
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
       - uses: dtolnay/rust-toolchain@stable
       - name: Install Tauri Linux dependencies
+        if: matrix.target == 'linux'
         run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev patchelf libssl-dev libxdo-dev build-essential pkg-config
-      - run: cargo test --manifest-path src-tauri/Cargo.toml
+      - run: npm ci
+      - name: Build installers
+        run: npm run tauri build
+      - name: Checksums
+        shell: bash
+        run: |
+          mkdir -p dist-checksums
+          find src-tauri/target -type f \( -name '*.exe' -o -name '*.msi' -o -name '*.dmg' -o -name '*.AppImage' -o -name '*.deb' \) -print0 | while IFS= read -r -d '' file; do
+            sha256sum "$file" | tee -a dist-checksums/SHA256SUMS.txt
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: toolzen-${{ matrix.target }}-${{ github.sha }}
+          path: |
+            src-tauri/target/release/bundle/**
+            dist-checksums/SHA256SUMS.txt
+          if-no-files-found: error
+
+# Releases are not published by this workflow. Attaching installers to GitHub Releases
+# requires a separate, explicitly approved workflow.

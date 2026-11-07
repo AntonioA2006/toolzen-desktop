@@ -63,9 +63,13 @@ MPL-2.0 crates in this resolution: `cssparser@0.37.0`, `cssparser-macros@0.7.1`,
 
 No crate in the metadata dump had an empty license or a GPL-only license. That statement is limited to the `license` field Cargo published for this resolution. It was not a manual reading of every license file.
 
-### Optional local engines
+### PDF library and engines that are not bundled
 
-The desktop app can spawn `qpdf`, `gs`, `pdftoppm`, `libreoffice`, and `tesseract` when they are already installed. They are not vendored. qpdf and Tesseract are Apache-2.0. Ghostscript is AGPL-3.0. Poppler (`pdftoppm`) is GPL-2.0. LibreOffice is MPL-2.0. Bundling Ghostscript or Poppler into a desktop installer would be a separate license decision and is not done here.
+Runnable PDF tools link `lopdf` 0.47.0 (MIT, `license` field MIT). The app does not spawn `qpdf`, Ghostscript, Poppler, LibreOffice, or Tesseract. Those programs are not vendored. qpdf and Tesseract are Apache-2.0. Ghostscript is AGPL-3.0. Poppler (`pdftoppm`) is GPL-2.0. LibreOffice is MPL-2.0. Bundling Ghostscript or Poppler into a desktop installer would be a separate license decision and is not done here.
+
+Plus Jakarta Sans is shipped through `@fontsource/plus-jakarta-sans` (OFL-1.1). The upstream OFL text is in `third-party/fonts/plus-jakarta-sans-OFL.txt`. Inter and JetBrains Mono remain OFL-1.1 dependencies; the UI loads Plus Jakarta Sans.
+
+A Windows build that uses `webviewInstallMode.type = offlineInstaller` embeds Microsoft’s WebView2 Evergreen standalone installer. Tauri’s config schema describes that payload as about 127 MB. It is Microsoft software under Microsoft’s redistribution terms, not an Apache-2.0 file, and it is not stored in this repository. No such installer was downloaded or built in the 2026-11-07 UTC validation.
 
 ## System libraries
 

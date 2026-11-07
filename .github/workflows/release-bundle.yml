@@ -1,0 +1,33 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 ToolZen Contributors
+
+name: Release bundle
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Commit SHA to check out. This workflow does not tag or publish.
+        required: true
+        type: string
+
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx vitest run tests/release-manifest.test.ts
+      - name: Remind that publishing is a separate disabled step
+        run: |
+          echo "Release bundle checks passed for ${{ inputs.ref }}."
+          echo "No tag, draft, or GitHub Release was created."
+          echo "Installer bytes still come from the package job artifacts. Copy them into a directory and run scripts/release/assemble.mjs locally or in a reviewed environment."
+
+# This file has no push or tag trigger. It does not call the GitHub Releases API.

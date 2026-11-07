@@ -11,10 +11,21 @@ use crate::error::{AppError, AppResult};
 
 const MIGRATIONS: &[(i64, &str)] = &[
     (1, include_str!("../migrations/001_initial.sql")),
-    (2, include_str!("../migrations/002_workflows_ai_permissions.sql")),
+    (
+        2,
+        include_str!("../migrations/002_workflows_ai_permissions.sql"),
+    ),
 ];
 
-const CATEGORIES: &[&str] = &["pdf", "images", "text", "developer-tools", "file-utilities", "converters", "productivity"];
+const CATEGORIES: &[&str] = &[
+    "pdf",
+    "images",
+    "text",
+    "developer-tools",
+    "file-utilities",
+    "converters",
+    "productivity",
+];
 const MAX_WORKFLOW_CHARS: usize = 256 * 1024;
 const MAX_MESSAGE_CHARS: usize = 16 * 1024;
 
@@ -130,7 +141,10 @@ impl Database {
         conn.pragma_update(None, "foreign_keys", "ON")?;
         conn.pragma_update(None, "busy_timeout", 2000)?;
         migrate(&conn)?;
-        Ok(Self { conn, path: path.to_path_buf() })
+        Ok(Self {
+            conn,
+            path: path.to_path_buf(),
+        })
     }
 
     pub fn load_state(&self) -> AppResult<PersistedState> {
@@ -140,12 +154,24 @@ impl Database {
             favorites: load_favorites(&self.conn)?,
             recent: load_recent(&self.conn)?,
             usage: load_usage(&self.conn)?,
-            workflows: load_json_column(&self.conn, "SELECT definition_json FROM workflows ORDER BY updated_at DESC")?,
-            workflow_executions: load_json_column(&self.conn, "SELECT record_json FROM workflow_executions ORDER BY started_at DESC")?,
+            workflows: load_json_column(
+                &self.conn,
+                "SELECT definition_json FROM workflows ORDER BY updated_at DESC",
+            )?,
+            workflow_executions: load_json_column(
+                &self.conn,
+                "SELECT record_json FROM workflow_executions ORDER BY started_at DESC",
+            )?,
             ai_conversations: load_conversations(&self.conn)?,
             ai_messages: load_messages(&self.conn)?,
-            permission_grants: load_json_column(&self.conn, "SELECT grant_json FROM permission_grants ORDER BY granted_at ASC")?,
-            permission_audit: load_json_column(&self.conn, "SELECT event_json FROM permission_audit ORDER BY occurred_at ASC")?,
+            permission_grants: load_json_column(
+                &self.conn,
+                "SELECT grant_json FROM permission_grants ORDER BY granted_at ASC",
+            )?,
+            permission_audit: load_json_column(
+                &self.conn,
+                "SELECT event_json FROM permission_audit ORDER BY occurred_at ASC",
+            )?,
         })
     }
 
@@ -174,7 +200,8 @@ impl Database {
                 if favorite {
                     self.conn.execute("INSERT OR IGNORE INTO favorites (tool_id, created_at) VALUES (?1, strftime('%Y-%m-%dT%H:%M:%fZ','now'))", params![tool_id])?;
                 } else {
-                    self.conn.execute("DELETE FROM favorites WHERE tool_id = ?1", params![tool_id])?;
+                    self.conn
+                        .execute("DELETE FROM favorites WHERE tool_id = ?1", params![tool_id])?;
                 }
             }
             PersistenceOp::RecordToolOpen { tool_id, opened_at } => {
@@ -182,7 +209,10 @@ impl Database {
                 if opened_at.len() > 40 || !opened_at.contains('T') {
                     return Err(AppError::Message("Invalid timestamp.".into()));
                 }
-                self.conn.execute("INSERT INTO recent_tools (tool_id, opened_at) VALUES (?1, ?2)", params![tool_id, opened_at])?;
+                self.conn.execute(
+                    "INSERT INTO recent_tools (tool_id, opened_at) VALUES (?1, ?2)",
+                    params![tool_id, opened_at],
+                )?;
                 self.conn.execute("DELETE FROM recent_tools WHERE id NOT IN (SELECT id FROM recent_tools ORDER BY opened_at DESC LIMIT 200)", [])?;
                 self.conn.execute(
                     "INSERT INTO tool_usage (tool_id, open_count, last_opened_at) VALUES (?1, 1, ?2) ON CONFLICT(tool_id) DO UPDATE SET open_count = open_count + 1, last_opened_at = excluded.last_opened_at",
@@ -196,21 +226,35 @@ impl Database {
             PersistenceOp::ClearFavorites => {
                 self.conn.execute("DELETE FROM favorites", [])?;
             }
-            PersistenceOp::ResetPreferences => save_preferences(&self.conn, &default_preferences())?,
+            PersistenceOp::ResetPreferences => {
+                save_preferences(&self.conn, &default_preferences())?
+            }
             PersistenceOp::ResetAllLocalData => reset_all(&self.conn)?,
             PersistenceOp::UpsertWorkflow { record } => upsert_workflow(&self.conn, &record)?,
             PersistenceOp::DeleteWorkflow { id } => {
                 require_id(&id)?;
-                self.conn.execute("DELETE FROM workflow_executions WHERE workflow_id = ?1", params![id])?;
-                self.conn.execute("DELETE FROM workflows WHERE id = ?1", params![id])?;
+                self.conn.execute(
+                    "DELETE FROM workflow_executions WHERE workflow_id = ?1",
+                    params![id],
+                )?;
+                self.conn
+                    .execute("DELETE FROM workflows WHERE id = ?1", params![id])?;
             }
-            PersistenceOp::AppendWorkflowExecution { record } => append_execution(&self.conn, &record)?,
-            PersistenceOp::UpsertAiConversation { record } => upsert_conversation(&self.conn, &record)?,
+            PersistenceOp::AppendWorkflowExecution { record } => {
+                append_execution(&self.conn, &record)?
+            }
+            PersistenceOp::UpsertAiConversation { record } => {
+                upsert_conversation(&self.conn, &record)?
+            }
             PersistenceOp::AppendAiMessage { message } => append_message(&self.conn, &message)?,
             PersistenceOp::DeleteAiConversation { id } => {
                 require_text_id(&id)?;
-                self.conn.execute("DELETE FROM ai_messages WHERE conversation_id = ?1", params![id])?;
-                self.conn.execute("DELETE FROM ai_conversations WHERE id = ?1", params![id])?;
+                self.conn.execute(
+                    "DELETE FROM ai_messages WHERE conversation_id = ?1",
+                    params![id],
+                )?;
+                self.conn
+                    .execute("DELETE FROM ai_conversations WHERE id = ?1", params![id])?;
             }
             PersistenceOp::InsertGrant { grant } => {
                 let id = require_json_id(&grant)?;
@@ -222,14 +266,31 @@ impl Database {
             }
             PersistenceOp::RevokeGrant { id, revoked_at } => {
                 require_text_id(&id)?;
-                let mut grant: Value = self.conn.query_row("SELECT grant_json FROM permission_grants WHERE id = ?1", params![id], |row| {
-                    let text: String = row.get(0)?;
-                    Ok(text)
-                }).optional()?.map(|text| serde_json::from_str(&text)).transpose()?.ok_or_else(|| AppError::Message("Grant not found.".into()))?;
+                let mut grant: Value = self
+                    .conn
+                    .query_row(
+                        "SELECT grant_json FROM permission_grants WHERE id = ?1",
+                        params![id],
+                        |row| {
+                            let text: String = row.get(0)?;
+                            Ok(text)
+                        },
+                    )
+                    .optional()?
+                    .map(|text| serde_json::from_str(&text))
+                    .transpose()?
+                    .ok_or_else(|| AppError::Message("Grant not found.".into()))?;
                 if let Some(object) = grant.as_object_mut() {
                     object.insert("revokedAt".into(), Value::String(revoked_at));
                 }
-                self.conn.execute("UPDATE permission_grants SET grant_json = ?2, revoked_at = ?3 WHERE id = ?1", params![id, grant.to_string(), grant["revokedAt"].as_str().unwrap_or("")])?;
+                self.conn.execute(
+                    "UPDATE permission_grants SET grant_json = ?2, revoked_at = ?3 WHERE id = ?1",
+                    params![
+                        id,
+                        grant.to_string(),
+                        grant["revokedAt"].as_str().unwrap_or("")
+                    ],
+                )?;
             }
             PersistenceOp::AppendAudit { event } => {
                 let id = require_json_id(&event)?;
@@ -251,7 +312,9 @@ pub fn valid_identifier(value: &str) -> bool {
         return false;
     }
     let ok = |byte: u8| byte.is_ascii_lowercase() || byte.is_ascii_digit();
-    ok(bytes[0]) && ok(bytes[bytes.len() - 1]) && bytes.iter().all(|byte| ok(*byte) || *byte == b'-')
+    ok(bytes[0])
+        && ok(bytes[bytes.len() - 1])
+        && bytes.iter().all(|byte| ok(*byte) || *byte == b'-')
 }
 
 fn migrate(conn: &Connection) -> AppResult<()> {
@@ -269,16 +332,24 @@ fn migrate(conn: &Connection) -> AppResult<()> {
 }
 
 fn schema_version(conn: &Connection) -> AppResult<i64> {
-    let exists: i64 = conn.query_row("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'schema_migrations'", [], |row| row.get(0))?;
+    let exists: i64 = conn.query_row(
+        "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'schema_migrations'",
+        [],
+        |row| row.get(0),
+    )?;
     if exists == 0 {
         return Ok(0);
     }
-    Ok(conn.query_row("SELECT COALESCE(MAX(version), 0) FROM schema_migrations", [], |row| row.get(0))?)
+    Ok(conn.query_row(
+        "SELECT COALESCE(MAX(version), 0) FROM schema_migrations",
+        [],
+        |row| row.get(0),
+    )?)
 }
 
 fn default_preferences() -> Preferences {
     Preferences {
-        theme: "dark".into(),
+        theme: "light".into(),
         language: "en".into(),
         startup_page: "home".into(),
         execution_mode: "local".into(),
@@ -292,14 +363,21 @@ fn validate_preferences(preferences: &Preferences) -> AppResult<()> {
     if !matches!(preferences.theme.as_str(), "dark" | "light" | "system") {
         return Err(AppError::Message("Invalid theme.".into()));
     }
-    if preferences.language != "en" {
-        return Err(AppError::Message("Only English is implemented.".into()));
+    if preferences.language != "en" && preferences.language != "es" {
+        return Err(AppError::Message(
+            "Only English and Spanish are implemented.".into(),
+        ));
     }
-    if !matches!(preferences.startup_page.as_str(), "home" | "tools" | "last-tool") {
+    if !matches!(
+        preferences.startup_page.as_str(),
+        "home" | "tools" | "last-tool"
+    ) {
         return Err(AppError::Message("Invalid startup page.".into()));
     }
     if preferences.execution_mode == "cloud" {
-        return Err(AppError::Message("Cloud mode cannot be stored. No cloud provider exists.".into()));
+        return Err(AppError::Message(
+            "Cloud mode cannot be stored. No cloud provider exists.".into(),
+        ));
     }
     if !matches!(preferences.execution_mode.as_str(), "local" | "auto") {
         return Err(AppError::Message("Invalid execution mode.".into()));
@@ -316,7 +394,10 @@ fn validate_preferences(preferences: &Preferences) -> AppResult<()> {
 }
 
 fn validate_route(route: &Value) -> AppResult<()> {
-    let name = route.get("name").and_then(Value::as_str).ok_or_else(|| AppError::Message("Invalid route.".into()))?;
+    let name = route
+        .get("name")
+        .and_then(Value::as_str)
+        .ok_or_else(|| AppError::Message("Invalid route.".into()))?;
     match name {
         "home" | "tools" | "favorites" | "recent" | "settings" | "about" => Ok(()),
         "tool" => {
@@ -325,14 +406,22 @@ fn validate_route(route: &Value) -> AppResult<()> {
         }
         "category" => {
             let category = route.get("category").and_then(Value::as_str).unwrap_or("");
-            if CATEGORIES.contains(&category) { Ok(()) } else { Err(AppError::Message("Invalid category.".into())) }
+            if CATEGORIES.contains(&category) {
+                Ok(())
+            } else {
+                Err(AppError::Message("Invalid category.".into()))
+            }
         }
         _ => Err(AppError::Message("Invalid route.".into())),
     }
 }
 
 fn save_preferences(conn: &Connection, preferences: &Preferences) -> AppResult<()> {
-    let route = preferences.last_route.as_ref().map(serde_json::to_string).transpose()?;
+    let route = preferences
+        .last_route
+        .as_ref()
+        .map(serde_json::to_string)
+        .transpose()?;
     conn.execute(
         "UPDATE preferences SET theme=?1, language=?2, startup_page=?3, execution_mode=?4, last_route_json=?5, ai_retention_opt_in=?6, ai_retention_days=?7 WHERE id=1",
         params![
@@ -375,14 +464,27 @@ fn load_favorites(conn: &Connection) -> AppResult<Vec<String>> {
 }
 
 fn load_recent(conn: &Connection) -> AppResult<Vec<RecentEntry>> {
-    let mut statement = conn.prepare("SELECT tool_id, opened_at FROM recent_tools ORDER BY opened_at DESC LIMIT 200")?;
-    let rows = statement.query_map([], |row| Ok(RecentEntry { tool_id: row.get(0)?, opened_at: row.get(1)? }))?;
+    let mut statement = conn
+        .prepare("SELECT tool_id, opened_at FROM recent_tools ORDER BY opened_at DESC LIMIT 200")?;
+    let rows = statement.query_map([], |row| {
+        Ok(RecentEntry {
+            tool_id: row.get(0)?,
+            opened_at: row.get(1)?,
+        })
+    })?;
     Ok(rows.collect::<Result<Vec<_>, _>>()?)
 }
 
 fn load_usage(conn: &Connection) -> AppResult<Vec<UsageEntry>> {
-    let mut statement = conn.prepare("SELECT tool_id, open_count, last_opened_at FROM tool_usage")?;
-    let rows = statement.query_map([], |row| Ok(UsageEntry { tool_id: row.get(0)?, open_count: row.get(1)?, last_opened_at: row.get(2)? }))?;
+    let mut statement =
+        conn.prepare("SELECT tool_id, open_count, last_opened_at FROM tool_usage")?;
+    let rows = statement.query_map([], |row| {
+        Ok(UsageEntry {
+            tool_id: row.get(0)?,
+            open_count: row.get(1)?,
+            last_opened_at: row.get(2)?,
+        })
+    })?;
     Ok(rows.collect::<Result<Vec<_>, _>>()?)
 }
 
@@ -413,7 +515,13 @@ fn load_conversations(conn: &Connection) -> AppResult<Vec<AiConversation>> {
 fn load_messages(conn: &Connection) -> AppResult<Vec<AiMessage>> {
     let mut statement = conn.prepare("SELECT id, conversation_id, role, content, created_at FROM ai_messages ORDER BY created_at ASC")?;
     let rows = statement.query_map([], |row| {
-        Ok(AiMessage { id: row.get(0)?, conversation_id: row.get(1)?, role: row.get(2)?, content: row.get(3)?, created_at: row.get(4)? })
+        Ok(AiMessage {
+            id: row.get(0)?,
+            conversation_id: row.get(1)?,
+            role: row.get(2)?,
+            content: row.get(3)?,
+            created_at: row.get(4)?,
+        })
     })?;
     Ok(rows.collect::<Result<Vec<_>, _>>()?)
 }
@@ -432,7 +540,10 @@ fn reset_all(conn: &Connection) -> AppResult<()> {
 
 fn upsert_workflow(conn: &Connection, record: &Value) -> AppResult<()> {
     let text = bounded_json(record, MAX_WORKFLOW_CHARS)?;
-    let id = record.pointer("/metadata/id").and_then(Value::as_str).ok_or_else(|| AppError::Message("Workflow id is missing.".into()))?;
+    let id = record
+        .pointer("/metadata/id")
+        .and_then(Value::as_str)
+        .ok_or_else(|| AppError::Message("Workflow id is missing.".into()))?;
     require_id(id)?;
     conn.execute(
         "INSERT INTO workflows (id, definition_json, updated_at) VALUES (?1, ?2, strftime('%Y-%m-%dT%H:%M:%fZ','now')) ON CONFLICT(id) DO UPDATE SET definition_json = excluded.definition_json, updated_at = excluded.updated_at",
@@ -446,14 +557,22 @@ fn append_execution(conn: &Connection, record: &Value) -> AppResult<()> {
     if let Some(nodes) = record.get("nodeResults").and_then(Value::as_array) {
         for node in nodes {
             if node.get("input").is_some() || node.get("output").is_some() {
-                return Err(AppError::Message("Workflow history cannot store input or output contents.".into()));
+                return Err(AppError::Message(
+                    "Workflow history cannot store input or output contents.".into(),
+                ));
             }
         }
     }
     let id = require_json_id(record)?;
-    let workflow_id = record.get("workflowId").and_then(Value::as_str).unwrap_or("");
+    let workflow_id = record
+        .get("workflowId")
+        .and_then(Value::as_str)
+        .unwrap_or("");
     require_id(workflow_id)?;
-    let started = record.get("startedAt").and_then(Value::as_str).unwrap_or("");
+    let started = record
+        .get("startedAt")
+        .and_then(Value::as_str)
+        .unwrap_or("");
     conn.execute(
         "INSERT INTO workflow_executions (id, workflow_id, record_json, started_at) VALUES (?1, ?2, ?3, ?4)",
         params![id, workflow_id, text, started],
@@ -463,13 +582,28 @@ fn append_execution(conn: &Connection, record: &Value) -> AppResult<()> {
 
 fn upsert_conversation(conn: &Connection, record: &Value) -> AppResult<()> {
     let id = require_json_id(record)?;
-    let title = record.get("title").and_then(Value::as_str).unwrap_or("").to_string();
+    let title = record
+        .get("title")
+        .and_then(Value::as_str)
+        .unwrap_or("")
+        .to_string();
     if title.len() > 200 {
         return Err(AppError::Message("Conversation title is too long.".into()));
     }
-    let created = record.get("createdAt").and_then(Value::as_str).unwrap_or("").to_string();
-    let updated = record.get("updatedAt").and_then(Value::as_str).unwrap_or("").to_string();
-    let retention = record.get("retentionOptIn").and_then(Value::as_bool).unwrap_or(false);
+    let created = record
+        .get("createdAt")
+        .and_then(Value::as_str)
+        .unwrap_or("")
+        .to_string();
+    let updated = record
+        .get("updatedAt")
+        .and_then(Value::as_str)
+        .unwrap_or("")
+        .to_string();
+    let retention = record
+        .get("retentionOptIn")
+        .and_then(Value::as_bool)
+        .unwrap_or(false);
     conn.execute(
         "INSERT INTO ai_conversations (id, title, created_at, updated_at, retention_opt_in) VALUES (?1, ?2, ?3, ?4, ?5) ON CONFLICT(id) DO UPDATE SET title = excluded.title, updated_at = excluded.updated_at, retention_opt_in = excluded.retention_opt_in",
         params![id, title, created, updated, if retention { 1 } else { 0 }],
@@ -480,12 +614,25 @@ fn upsert_conversation(conn: &Connection, record: &Value) -> AppResult<()> {
 fn append_message(conn: &Connection, message: &Value) -> AppResult<()> {
     let preferences = load_preferences(conn)?;
     if !preferences.ai_retention_opt_in {
-        return Err(AppError::Message("AI message storage is off. Nothing was saved.".into()));
+        return Err(AppError::Message(
+            "AI message storage is off. Nothing was saved.".into(),
+        ));
     }
-    let conversation_id = message.get("conversationId").and_then(Value::as_str).unwrap_or("");
-    let retention: Option<i64> = conn.query_row("SELECT retention_opt_in FROM ai_conversations WHERE id = ?1", params![conversation_id], |row| row.get(0)).optional()?;
+    let conversation_id = message
+        .get("conversationId")
+        .and_then(Value::as_str)
+        .unwrap_or("");
+    let retention: Option<i64> = conn
+        .query_row(
+            "SELECT retention_opt_in FROM ai_conversations WHERE id = ?1",
+            params![conversation_id],
+            |row| row.get(0),
+        )
+        .optional()?;
     if retention != Some(1) {
-        return Err(AppError::Message("This conversation is not opted in to retention.".into()));
+        return Err(AppError::Message(
+            "This conversation is not opted in to retention.".into(),
+        ));
     }
     let content = message.get("content").and_then(Value::as_str).unwrap_or("");
     if content.len() > MAX_MESSAGE_CHARS {
@@ -493,7 +640,10 @@ fn append_message(conn: &Connection, message: &Value) -> AppResult<()> {
     }
     let id = require_json_id(message)?;
     let role = message.get("role").and_then(Value::as_str).unwrap_or("");
-    let created = message.get("createdAt").and_then(Value::as_str).unwrap_or("");
+    let created = message
+        .get("createdAt")
+        .and_then(Value::as_str)
+        .unwrap_or("");
     conn.execute(
         "INSERT INTO ai_messages (id, conversation_id, role, content, created_at) VALUES (?1, ?2, ?3, ?4, ?5)",
         params![id, conversation_id, role, content, created],
@@ -502,7 +652,11 @@ fn append_message(conn: &Connection, message: &Value) -> AppResult<()> {
 }
 
 fn require_id(value: &str) -> AppResult<()> {
-    if valid_identifier(value) { Ok(()) } else { Err(AppError::Message("Invalid identifier.".into())) }
+    if valid_identifier(value) {
+        Ok(())
+    } else {
+        Err(AppError::Message("Invalid identifier.".into()))
+    }
 }
 
 fn require_text_id(value: &str) -> AppResult<()> {
@@ -522,7 +676,9 @@ fn require_json_id(value: &Value) -> AppResult<String> {
 fn bounded_json(value: &Value, max_chars: usize) -> AppResult<String> {
     let text = serde_json::to_string(value)?;
     if text.len() > max_chars {
-        return Err(AppError::Message("Stored JSON exceeds the size limit.".into()));
+        return Err(AppError::Message(
+            "Stored JSON exceeds the size limit.".into(),
+        ));
     }
     Ok(text)
 }
@@ -536,7 +692,8 @@ mod tests {
 
     fn temp_db() -> Database {
         let n = COUNTER.fetch_add(1, Ordering::Relaxed);
-        let path = std::env::temp_dir().join(format!("toolzen-db-{}-{n}.sqlite", std::process::id()));
+        let path =
+            std::env::temp_dir().join(format!("toolzen-db-{}-{n}.sqlite", std::process::id()));
         let _ = std::fs::remove_file(&path);
         Database::open(&path).expect("open db")
     }
@@ -548,7 +705,7 @@ mod tests {
         migrate(&db.conn).unwrap();
         assert_eq!(schema_version(&db.conn).unwrap(), 2);
         let prefs = db.load_state().unwrap().preferences;
-        assert_eq!(prefs.theme, "dark");
+        assert_eq!(prefs.theme, "light");
         assert!(!prefs.ai_retention_opt_in);
     }
 
@@ -557,7 +714,9 @@ mod tests {
         let db = temp_db();
         let mut preferences = default_preferences();
         preferences.execution_mode = "cloud".into();
-        let error = db.apply(PersistenceOp::SetPreferences { preferences }).unwrap_err();
+        let error = db
+            .apply(PersistenceOp::SetPreferences { preferences })
+            .unwrap_err();
         assert!(error.to_string().contains("Cloud mode"));
     }
 
@@ -571,7 +730,10 @@ mod tests {
             "updatedAt": "2026-11-07T00:00:00Z",
             "retentionOptIn": true
         });
-        db.apply(PersistenceOp::UpsertAiConversation { record: conversation }).unwrap();
+        db.apply(PersistenceOp::UpsertAiConversation {
+            record: conversation,
+        })
+        .unwrap();
         let message = serde_json::json!({
             "id": "msg-1",
             "conversationId": "conv-1",
@@ -579,11 +741,18 @@ mod tests {
             "content": "hello",
             "createdAt": "2026-11-07T00:00:01Z"
         });
-        assert!(db.apply(PersistenceOp::AppendAiMessage { message: message.clone() }).is_err());
+        assert!(db
+            .apply(PersistenceOp::AppendAiMessage {
+                message: message.clone()
+            })
+            .is_err());
         let mut preferences = default_preferences();
         preferences.ai_retention_opt_in = true;
-        db.apply(PersistenceOp::SetPreferences { preferences }).unwrap();
-        let state = db.apply(PersistenceOp::AppendAiMessage { message }).unwrap();
+        db.apply(PersistenceOp::SetPreferences { preferences })
+            .unwrap();
+        let state = db
+            .apply(PersistenceOp::AppendAiMessage { message })
+            .unwrap();
         assert_eq!(state.ai_messages.len(), 1);
         assert_eq!(state.ai_messages[0].content, "hello");
     }
@@ -601,7 +770,9 @@ mod tests {
             "nodeResults": [{ "nodeId": "format", "output": "secret" }],
             "errorCode": null
         });
-        let error = db.apply(PersistenceOp::AppendWorkflowExecution { record }).unwrap_err();
+        let error = db
+            .apply(PersistenceOp::AppendWorkflowExecution { record })
+            .unwrap_err();
         assert!(error.to_string().contains("input or output"));
     }
 }

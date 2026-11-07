@@ -3,6 +3,8 @@
 
 # Parity with AntonioA2006/ToolZen
 
+The 2026-11-07 audit narrowed the reliable set. Ready tools no longer call qpdf, Ghostscript, or Poppler. See `docs/AUDIT-REPORT.md`. The table below is the earlier engine comparison and is not a claim that every row still shells out.
+
 Reference commit `b600a8d6646cd9bf39b2d20f3fff117b914ce4f2` on `main`. Catalogue source: `src/Catalog/Infrastructure/Persistence/CatalogDefinitions.php` and `src/Web/Presentation/View/ToolDirectory.php`. Routes: `src/Web/Presentation/Http/routes.php`. Visual tokens: `resources/css/app.css` (`--tz-*`). Brand mark: `resources/views/components/brand.blade.php`.
 
 The reference tree has no LICENSE or NOTICE. Desktop code is original and stays Apache-2.0. Engine behavior follows the reference command shapes; the PHP sources were not copied into this repository.

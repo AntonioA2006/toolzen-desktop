@@ -33,6 +33,7 @@ export async function runCanvasTool(toolId: string, files: readonly LocalFile[],
   if (toolId === "resize-image") {
     const width = numberOption(options, "width");
     const height = numberOption(options, "height");
+    if (width < 1 || height < 1) throw new Error("Width and height must be at least 1.");
     const scale = Math.min(width / image.width, height / image.height, 1);
     return encode(image, Math.max(1, Math.round(image.width * scale)), Math.max(1, Math.round(image.height * scale)), file, "resize");
   }

@@ -1,6 +1,6 @@
 [package]
 name = "toolzen-desktop"
-version = "0.1.0"
+version = "0.1.1"
 description = "ToolZen Desktop — local-first utilities"
 authors = ["ToolZen Contributors"]
 license = "Apache-2.0"
@@ -21,3 +21,5 @@ rusqlite = { version = "0.41", features = ["bundled"] }
 tauri = { version = "2.12", features = [] }
 tauri-plugin-opener = "2.7.2"
 thiserror = "2"
+lopdf = "0.47"
+rfd = "0.15"

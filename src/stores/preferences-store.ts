@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 ToolZen Contributors
 
+import { LOCALE_RESOLVED_FLAG, resolveLocale } from "@/lib/locale";
 import { create } from "zustand";
 import { nowIso } from "@/lib/ids";
 import { createPersistence } from "@/services/persistence";
@@ -65,8 +66,14 @@ export const usePreferencesStore = create<PreferencesState>((set, get) => ({
     try {
       const state = await port.load();
       const info = await port.info();
-      set(applyState(state, info, port));
-      useSessionStore.getState().setRoute(startupRoute(state.preferences));
+      const already = typeof localStorage !== "undefined" && localStorage.getItem(LOCALE_RESOLVED_FLAG) === "1";
+      const language = resolveLocale(typeof navigator === "undefined" ? "" : navigator.language, state.preferences.language, already);
+      if (typeof localStorage !== "undefined") localStorage.setItem(LOCALE_RESOLVED_FLAG, "1");
+      const loaded = language === state.preferences.language
+        ? state
+        : await port.apply({ type: "setPreferences", preferences: { ...state.preferences, language } });
+      set(applyState(loaded, info, port));
+      useSessionStore.getState().setRoute(startupRoute(loaded.preferences));
     } catch (error) {
       set({ status: "error", error: error instanceof Error ? error.message : "Preferences could not be loaded." });
     }

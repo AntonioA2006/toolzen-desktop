@@ -13,7 +13,7 @@ CREATE TABLE preferences (
 );
 
 INSERT INTO preferences (id, theme, language, startup_page, execution_mode, last_route_json, ai_retention_opt_in, ai_retention_days)
-VALUES (1, 'dark', 'en', 'home', 'local', NULL, 0, NULL);
+VALUES (1, 'light', 'en', 'home', 'local', NULL, 0, NULL);
 
 CREATE TABLE favorites (
   tool_id TEXT PRIMARY KEY,

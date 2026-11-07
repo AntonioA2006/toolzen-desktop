@@ -2,7 +2,7 @@
 // Copyright 2026 ToolZen Contributors
 
 export const APP_NAME = "ToolZen";
-export const APP_VERSION = "0.1.0";
+export const APP_VERSION = "0.1.1";
 export const APP_IDENTIFIER = "com.toolszen.desktop";
 export const LICENSE_SPDX = "Apache-2.0";
 export const COPYRIGHT_NOTICE = "Copyright 2026 ToolZen Contributors";

@@ -14,9 +14,10 @@ Screenshots of the running desktop UI are captured during verification and attac
 ## Features in this release
 
 - Desktop shell with a collapsible sidebar, global search, and a command palette (`Ctrl+K` on Windows and Linux, `Cmd+K` on macOS).
-- Dark theme by default, plus light and system themes. The choice is stored locally.
+- Light theme by default for a new database, plus dark and system themes. The choice is stored locally.
 - Tool explorer, favorites, and recent activity. History stores tool ids and timestamps only, never input or output text.
-- The same twenty tools as the ToolZen reference catalogue: PDF, image, conversion, and OCR. See [docs/PARITY.md](docs/PARITY.md) for what actually runs.
+- Ten tools run without installing qpdf, Ghostscript, Poppler, LibreOffice, or Tesseract: merge, extract, delete, and rotate PDF, plus compress, resize, crop, WebP, metadata removal, and JPG to PDF. The other catalogue entries stay visible and do not pretend to run. See [docs/AUDIT-REPORT.md](docs/AUDIT-REPORT.md) and [docs/PARITY.md](docs/PARITY.md).
+- A Windows NSIS per-user installer is the intended package. No `.exe` has been built, and a clean Windows install has not been done, so distribution is **not ready**. See [docs/INSTALL.md](docs/INSTALL.md) and [docs/DISTRIBUTION.md](docs/DISTRIBUTION.md).
 - SQLite persistence in the desktop app, with versioned migrations. The browser preview uses a separate localStorage adapter and says so.
 - A local execution manager, a cloud provider contract with no implementation, a permission manager, and workflow and AI planning foundations. There is no workflow editor and no assistant.
 
@@ -36,7 +37,9 @@ Tools, future workflows, and future AI plans share one tool registry, one execut
 
 ## Install and development
 
-Requirements: Node.js 22+, Rust 1.90+ (stable), and the Tauri system packages for your OS. Linux package names are listed in [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
+End users: [docs/INSTALL.md](docs/INSTALL.md). There is no installer file yet.
+
+Development requirements: Node.js 22+, Rust 1.90+ (stable), and the Tauri system packages for your OS. Linux package names are listed in [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
 
 ```bash
 npm install
